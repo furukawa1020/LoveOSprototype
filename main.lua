@@ -35,42 +35,6 @@ function love.load()
         menu = MenuState,
         battle = BattleState
     }
-    
-    RPG.currentState = nil
-    RPG.switchState("title")
-    
-    -- Initialize Input
-    Input.init()
-end
-
-function love.update(dt)
-    if RPG.currentState and RPG.currentState.update then
-        RPG.currentState.update(dt)
-    end
-    Input.update()
-    
-    local Audio = require("src.system.audio")
-    Audio.update(dt)
-end
-
-function love.draw()
-    love.graphics.push()
-    love.graphics.scale(RPG.SCALE, RPG.SCALE)
-    
-    if RPG.currentState and RPG.currentState.draw then
-        RPG.currentState.draw()
-    end
-    
-    love.graphics.pop()
-    
-    -- Debug FPS
-    love.graphics.print("FPS: " .. tostring(love.timer.getFPS()), 10, 10)
-end
-
-function RPG.switchState(stateName, params)
-    if RPG.states[stateName] then
-        if RPG.currentState and RPG.currentState.exit then
-            RPG.currentState.exit()
         end
         
         RPG.currentState = RPG.states[stateName]
