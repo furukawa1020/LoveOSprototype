@@ -45,6 +45,8 @@ end
 
 function love.textinput(t)
     Terminal.textinput(t)
+    local Audio = require("src.system.audio")
+    Audio.playSynth("key")
 end
 
 function love.keypressed(key)
@@ -52,4 +54,6 @@ function love.keypressed(key)
         love.event.quit()
     end
     Terminal.keypressed(key)
+    local Audio = require("src.system.audio")
+    Audio.playSynth("key")
 end

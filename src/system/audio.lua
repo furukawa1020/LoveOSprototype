@@ -18,29 +18,6 @@ local function generateWave(type, duration, freq)
         if type == "square" then
             sample = (math.sin(t * freq * 2 * math.pi) > 0) and 0.5 or -0.5
         elseif type == "noise" then
-            sample = (math.random() * 2 - 1) * 0.5
-        elseif type == "saw" then
-            sample = ((t * freq) % 1) * 2 - 1
-        end
-        
-        -- Envelope (Fade out)
-        sample = sample * (1 - i / length)
-        
-        data:setSample(i, sample)
-    end
-    
-    return love.audio.newSource(data, "static")
-end
-
-function Audio.init()
-    -- SFX
-    Audio.sources.select = generateWave("square", 0.1, 880)
-    Audio.sources.attack = generateWave("noise", 0.2, 0)
-    Audio.sources.hit = generateWave("saw", 0.3, 110)
-    
-    -- BGM Patterns (Note frequencies)
-    Audio.bgm.field = {261, 329, 392, 523, 392, 329} -- C Major Arpeggio
-    Audio.bgm.battle = {110, 110, 123, 110, 130, 110, 123, 110} -- Fast Bass
 end
 
 function Audio.playSFX(name)
