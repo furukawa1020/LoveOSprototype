@@ -157,6 +157,12 @@ function Terminal.execute(cmd)
         else
             Terminal.print("Usage: apt-get install <package>", Terminal.colors.error)
         end
+    elseif command == "installlove" then
+        Terminal.startInstall()
+    elseif command == "install" and parts[2] == "love" then
+        Terminal.startInstall()
+    elseif command == "make" and parts[2] == "love" then
+        Terminal.startInstall()
     else
         Terminal.print(command .. ": command not found", Terminal.colors.error)
     end
