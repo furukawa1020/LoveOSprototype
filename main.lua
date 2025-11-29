@@ -10,6 +10,7 @@ RPG.TILE_SIZE = 64
 -- Require core systems
 require("src.system.util")
 local Input = require("src.system.input")
+local Assets = require("src.system.assets")
 
 -- States
 local TitleState = require("src.state.title")
@@ -19,6 +20,9 @@ local BattleState = require("src.state.battle")
 
 function love.load()
     love.graphics.setDefaultFilter("nearest", "nearest")
+    
+    -- Generate Assets
+    Assets.generate()
     
     -- Initialize State Machine
     RPG.states = {
