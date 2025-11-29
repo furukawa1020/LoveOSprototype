@@ -14,6 +14,7 @@ local timer = 0
 local enemyAnim = {yOffset = 0, xOffset = 0}
 local animTimer = 0
 local screenShake = 0
+local particles = nil
 
 function BattleState.enter()
     print("Entered Battle State")
@@ -31,10 +32,24 @@ function BattleState.enter()
     enemyAnim.xOffset = 0
     animTimer = 0
     screenShake = 0
+    
+    -- Initialize Particles
+    local img = love.image.newImageData(4, 4)
+    img:mapPixel(function(x,y) return 1, 1, 0.5, 1 end)
+    local pTexture = love.graphics.newImage(img)
+    particles = love.graphics.newParticleSystem(pTexture, 100)
+    particles:setParticleLifetime(0.5, 1)
+    particles:setLinearAcceleration(-100, -100, 100, 100)
+    particles:setColors(1, 1, 0, 1, 1, 0, 0, 0) -- Yellow to Red fade
+    particles:setSizes(2, 0)
+    particles:setEmissionRate(0)
 end
 
 function BattleState.update(dt)
     local Audio = require("src.system.audio")
+    
+    -- Update Particles
+    if particles then particles:update(dt) end
     
     -- Idle Animation (Bobbing)
     animTimer = animTimer + dt
@@ -77,6 +92,11 @@ function BattleState.update(dt)
                 if playerStats.mp >= 5 then
                     playerStats.mp = playerStats.mp - 5
                     Audio.playSFX("attack")
+                    
+                    -- Emit Particles
+                    particles:setPosition(RPG.WIDTH/2, RPG.HEIGHT/2 - 32)
+                    particles:emit(50)
+                    
                     local damage = 20 + math.random(-5, 5)
                     enemyStats.hp = enemyStats.hp - damage
                     message = "Player casts Fireball! " .. damage .. " damage."
@@ -164,6 +184,11 @@ function BattleState.draw()
     local Assets = require("src.system.assets")
     love.graphics.setColor(1, 1, 1)
     love.graphics.draw(Assets.textures.slime, RPG.WIDTH/2 - 32 + enemyAnim.xOffset, RPG.HEIGHT/2 - 64 + enemyAnim.yOffset)
+    
+    -- Particles
+    if particles then
+        love.graphics.draw(particles, 0, 0)
+    end
     
     -- UI
     local fontScale = 2

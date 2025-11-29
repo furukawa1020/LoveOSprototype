@@ -96,21 +96,6 @@ function MapState.draw()
     
     -- Draw NPCs
     for _, npc in ipairs(npcs) do
-        NPC.draw(npc)
-    end
-    
-    -- Draw Player
-    Player.draw()
-    
-    Camera.detach()
-    
-    -- Draw UI
-    if showDialog then
-        love.graphics.setColor(0, 0, 0, 0.8)
-        love.graphics.rectangle("fill", 50, RPG.HEIGHT - 200, RPG.WIDTH - 100, 150)
-        love.graphics.setColor(1, 1, 1)
-        love.graphics.rectangle("line", 50, RPG.HEIGHT - 200, RPG.WIDTH - 100, 150)
-        
         love.graphics.print(currentDialog[dialogIndex], 100, RPG.HEIGHT - 150, 0, 2, 2)
     end
     
