@@ -130,7 +130,11 @@ function love.draw()
     -- Debug FPS
     love.graphics.print("FPS: " .. love.timer.getFPS(), 10, 10)
     love.graphics.print("Shader: " .. RPG.currentShaderName .. " (Tab to switch)", 10, 30)
-    love.graphics.print("Console: Press ` (Backtick) or /", 10, 50)
+    
+    love.graphics.setColor(1, 1, 0) -- Yellow
+    love.graphics.print("Geeky Console: Press / or ~", 10, 50)
+    love.graphics.print("Try typing 'love'!", 10, 70)
+    love.graphics.setColor(1, 1, 1)
     
     -- Draw Console
     Console.draw()
