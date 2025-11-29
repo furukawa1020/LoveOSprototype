@@ -45,14 +45,20 @@ function love.load()
     -- Canvas and Shader
     RPG.canvas = love.graphics.newCanvas(RPG.WIDTH, RPG.HEIGHT)
     RPG.shaders = {
-            RPG.currentShaderName = "none"
-            RPG.shader = nil
-        else
-            RPG.currentShaderName = "crt"
-            RPG.shader = RPG.shaders.crt
-            RPG.shader:send("screen_size", {RPG.WIDTH, RPG.HEIGHT})
-        end
-    end
+        crt = require("src.system.shader").crt,
+        dream = require("src.system.shader").dream,
+        none = nil
+    }
+    RPG.currentShaderName = "none"
+    RPG.shader = nil
+    
+    -- Love Tribute Particles
+    RPG.loveParticles = love.graphics.newParticleSystem(Assets.textures.heart, 100)
+    RPG.loveParticles:setParticleLifetime(1, 2)
+    RPG.loveParticles:setLinearAcceleration(-50, -100, 50, -200) -- Float up
+    RPG.loveParticles:setColors(1, 1, 1, 1, 1, 1, 1, 0) -- Fade out
+    RPG.loveParticles:setSizes(2, 4, 0) -- Grow then shrink
+    RPG.loveParticles:setEmissionRate(0)
 end
 
 function love.draw()
