@@ -1,4 +1,5 @@
 local Terminal = {}
+local utf8 = require("utf8")
 
 Terminal.lines = {}
 Terminal.maxLines = 24
