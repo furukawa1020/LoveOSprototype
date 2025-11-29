@@ -90,7 +90,7 @@ function MapState.draw()
     
     -- Draw NPCs
     for _, npc in ipairs(npcs) do
-        npc.draw(npc)
+        NPC.draw(npc)
     end
     
     -- Draw Player
