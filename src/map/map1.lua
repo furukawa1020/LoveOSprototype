@@ -2,8 +2,8 @@ local Map = {}
 
 Map.width = 20
 Map.height = 20
-Map.tilewidth = 16
-Map.tileheight = 16
+Map.tilewidth = 64
+Map.tileheight = 64
 
 -- 0: Walkable, 1: Wall
 Map.layers = {

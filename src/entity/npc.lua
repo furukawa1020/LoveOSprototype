@@ -4,8 +4,8 @@ function NPC.new(x, y, dialog)
     local self = {}
     self.x = x * RPG.TILE_SIZE
     self.y = y * RPG.TILE_SIZE
-    self.width = 16
-    self.height = 16
+    self.width = 64
+    self.height = 64
     self.tileX = x
     self.tileY = y
     self.dialog = dialog or {"..."}

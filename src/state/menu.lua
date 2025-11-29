@@ -36,17 +36,23 @@ function MenuState.draw()
     love.graphics.rectangle("fill", 0, 0, RPG.WIDTH, RPG.HEIGHT)
     
     -- Draw Menu Window
+    local menuWidth = 400
+    local menuHeight = 400
+    local menuX = (RPG.WIDTH - menuWidth) / 2
+    local menuY = (RPG.HEIGHT - menuHeight) / 2
+    
     love.graphics.setColor(0, 0, 0, 0.9)
-    love.graphics.rectangle("fill", 10, 10, 100, 100)
+    love.graphics.rectangle("fill", menuX, menuY, menuWidth, menuHeight)
     love.graphics.setColor(1, 1, 1)
-    love.graphics.rectangle("line", 10, 10, 100, 100)
+    love.graphics.rectangle("line", menuX, menuY, menuWidth, menuHeight)
     
     -- Draw Options
+    local fontScale = 3
     for i, option in ipairs(options) do
         if i == selection then
-            love.graphics.print("> " .. option, 20, 20 + (i-1)*15)
+            love.graphics.print("> " .. option, menuX + 40, menuY + 40 + (i-1)*60, 0, fontScale, fontScale)
         else
-            love.graphics.print("  " .. option, 20, 20 + (i-1)*15)
+            love.graphics.print("  " .. option, menuX + 40, menuY + 40 + (i-1)*60, 0, fontScale, fontScale)
         end
     end
 end

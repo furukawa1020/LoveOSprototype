@@ -2,10 +2,10 @@
 RPG = {}
 
 -- Constants
-RPG.WIDTH = 320
-RPG.HEIGHT = 180
-RPG.SCALE = 4
-RPG.TILE_SIZE = 16
+RPG.WIDTH = 1280
+RPG.HEIGHT = 720
+RPG.SCALE = 1
+RPG.TILE_SIZE = 64
 
 -- Require core systems
 require("src.system.util")

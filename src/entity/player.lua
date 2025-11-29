@@ -3,9 +3,9 @@ local Input = require("src.system.input")
 
 Player.x = 0
 Player.y = 0
-Player.width = 16
-Player.height = 16
-Player.speed = 60 -- pixels per second
+Player.width = 64
+Player.height = 64
+Player.speed = 240 -- pixels per second
 Player.tileX = 2
 Player.tileY = 2
 
