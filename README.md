@@ -1,41 +1,42 @@
-# Love2D RPG Engine Prototype
+# Love OS v11.4
 
-A simple, data-driven RPG engine built with [LÖVE](https://love2d.org/).
+**"Make Love, Not War."**
 
-## Features
+Love OS is a meta-operating system simulation designed to bring the Love2D engine to life. You are the developer, the operator, and the inhabitant of this digital world.
 
--   **High Resolution**: Native 1280x720 resolution with 64x64 pixel tiles.
--   **Turn-Based Battle**: Classic JRPG style combat with Attack, Skills, Items, and Run options.
--   **Procedural Assets**: Graphics (sprites, tiles) and Audio (BGM, SFX) are generated at runtime—no external assets required.
--   **State Machine**: Clean separation of game states (Title, Map, Menu, Battle).
--   **Interaction**: NPCs with dialog systems and world interaction.
+## System Requirements
+-   Love2D 11.0 or higher
+-   Keyboard (Mechanical preferred for immersion)
+-   Imagination
 
-## How to Run
+## Boot Instructions
+1.  Launch the kernel (`love .`).
+2.  Wait for the BIOS POST and Kernel initialization.
+3.  Follow the on-screen prompts.
 
-### Windows
-1.  Ensure LÖVE is installed.
-2.  Double-click `run.bat` to launch the game.
-    -   *Alternatively, drag the project folder onto `love.exe`.*
+## Command Reference
 
-## Controls
+### System Management
+-   `apt-get install love`: Installs the core Love2D framework. Required to render graphics.
+-   `installlove`: Alias for the above.
+-   `clear`: Clears the terminal buffer.
+-   `reboot`: Restarts the system.
+-   `exit`: Shuts down the system.
 
-| Action | Key |
-| :--- | :--- |
-| **Move** | Arrow Keys |
-| **Interact / Confirm** | Enter (Return) |
-| **Open Menu** | Escape |
-| **Cancel / Back** | Escape |
+### World Building (Requires 'love' package)
+-   `make world`: Compiles the world geometry. Generates the environment.
+-   `make player`: Spawns the user entity (Avatar).
+-   `make enemies`: [EXPERIMENTAL] Spawns debug entities. Use with caution.
 
-## Project Structure
+### Controls (Avatar Mode)
+-   **Arrow Keys**: Move Avatar
+-   **Z / Space**: Interact / Attack
+-   **Tab**: Toggle Shader (CRT / Dream / None)
+-   **` / /**: Toggle Terminal Overlay
 
--   `main.lua`: Entry point and game loop.
--   `conf.lua`: Configuration (window size, flags).
--   `src/`: Source code directory.
-    -   `state/`: Game states (Title, Map, Menu, Battle).
-    -   `entity/`: Game entities (Player, NPC).
-    -   `system/`: Core systems (Input, Camera, Assets, Audio).
-    -   `map/`: Map data files.
+## Troubleshooting
+If the system crashes or screen goes black, try `reboot`.
+If "Bugs" appear, eliminate them immediately.
 
-## Credits
-
-Developed as a prototype for a Love2D RPG Engine.
+---
+*Copyright (c) 2025 Love OS Team*

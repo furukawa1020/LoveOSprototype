@@ -159,6 +159,16 @@ function Terminal.execute(cmd)
         Terminal.print("readme.txt  kernel.sys  love.tar.gz")
     elseif command == "reboot" then
         love.event.quit("restart")
+    elseif command == "man" then
+        if parts[2] == "love" then
+            Terminal.print("NAME", Terminal.colors.highlight)
+            Terminal.print("    love - the framework you are playing with")
+            Terminal.print("DESCRIPTION", Terminal.colors.highlight)
+            Terminal.print("    Make love, not war.")
+            Terminal.print("    A framework for 2D games in Lua.")
+        else
+            Terminal.print("No manual entry for " .. (parts[2] or ""))
+        end
     elseif command == "apt-get" or command == "apt" then
         if parts[2] == "install" and parts[3] == "love" then
             Terminal.startInstall()
