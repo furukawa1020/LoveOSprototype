@@ -101,11 +101,11 @@ function MapState.draw()
     -- Draw UI
     if showDialog then
         love.graphics.setColor(0, 0, 0, 0.8)
-        love.graphics.rectangle("fill", 10, RPG.HEIGHT - 50, RPG.WIDTH - 20, 40)
+        love.graphics.rectangle("fill", 50, RPG.HEIGHT - 200, RPG.WIDTH - 100, 150)
         love.graphics.setColor(1, 1, 1)
-        love.graphics.rectangle("line", 10, RPG.HEIGHT - 50, RPG.WIDTH - 20, 40)
+        love.graphics.rectangle("line", 50, RPG.HEIGHT - 200, RPG.WIDTH - 100, 150)
         
-        love.graphics.print(currentDialog[dialogIndex], 20, RPG.HEIGHT - 40)
+        love.graphics.print(currentDialog[dialogIndex], 100, RPG.HEIGHT - 150, 0, 2, 2)
     end
     
     -- Debug

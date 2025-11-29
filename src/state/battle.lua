@@ -82,30 +82,31 @@ function BattleState.draw()
     
     -- Enemy
     love.graphics.setColor(1, 0, 0)
-    love.graphics.rectangle("fill", RPG.WIDTH/2 - 16, RPG.HEIGHT/2 - 32, 32, 32)
+    love.graphics.rectangle("fill", RPG.WIDTH/2 - 64, RPG.HEIGHT/2 - 128, 128, 128)
     
     -- UI
+    local fontScale = 2
     love.graphics.setColor(1, 1, 1)
-    love.graphics.print(enemyStats.name .. " HP: " .. enemyStats.hp .. "/" .. enemyStats.maxHp, 10, 10)
-    love.graphics.print("Player HP: " .. playerStats.hp .. "/" .. playerStats.maxHp, 10, RPG.HEIGHT - 60)
+    love.graphics.print(enemyStats.name .. " HP: " .. enemyStats.hp .. "/" .. enemyStats.maxHp, 50, 50, 0, fontScale, fontScale)
+    love.graphics.print("Player HP: " .. playerStats.hp .. "/" .. playerStats.maxHp, 50, RPG.HEIGHT - 150, 0, fontScale, fontScale)
     
     -- Message
-    love.graphics.print(message, 10, 30)
+    love.graphics.print(message, 50, 100, 0, fontScale, fontScale)
     
     -- Menu
     if turn == "PLAYER" then
-        love.graphics.rectangle("line", RPG.WIDTH - 80, RPG.HEIGHT - 80, 70, 70)
+        love.graphics.rectangle("line", RPG.WIDTH - 300, RPG.HEIGHT - 300, 250, 250)
         for i, option in ipairs(battleMenu) do
             if i == selection then
-                love.graphics.print("> " .. option, RPG.WIDTH - 75, RPG.HEIGHT - 75 + (i-1)*15)
+                love.graphics.print("> " .. option, RPG.WIDTH - 280, RPG.HEIGHT - 280 + (i-1)*50, 0, fontScale, fontScale)
             else
-                love.graphics.print("  " .. option, RPG.WIDTH - 75, RPG.HEIGHT - 75 + (i-1)*15)
+                love.graphics.print("  " .. option, RPG.WIDTH - 280, RPG.HEIGHT - 280 + (i-1)*50, 0, fontScale, fontScale)
             end
         end
     elseif turn == "WIN" then
-        love.graphics.print("YOU WON! Press Enter.", 100, 100)
+        love.graphics.print("YOU WON! Press Enter.", RPG.WIDTH/2 - 150, RPG.HEIGHT/2 + 100, 0, fontScale, fontScale)
     elseif turn == "LOSE" then
-        love.graphics.print("YOU LOST... Press Enter.", 100, 100)
+        love.graphics.print("YOU LOST... Press Enter.", RPG.WIDTH/2 - 150, RPG.HEIGHT/2 + 100, 0, fontScale, fontScale)
     end
 end
 

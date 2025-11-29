@@ -12,8 +12,9 @@ function TitleState.update(dt)
 end
 
 function TitleState.draw()
-    love.graphics.print("TITLE SCREEN", 100, 80)
-    love.graphics.print("Press Enter", 110, 100)
+    local fontScale = 4
+    love.graphics.print("TITLE SCREEN", RPG.WIDTH/2 - 150, RPG.HEIGHT/2 - 50, 0, fontScale, fontScale)
+    love.graphics.print("Press Enter", RPG.WIDTH/2 - 100, RPG.HEIGHT/2 + 50, 0, 2, 2)
 end
 
 function TitleState.exit()
