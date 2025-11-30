@@ -9,21 +9,7 @@ function Kernel.init()
     VFS.init()
     WM.init()
     
-    -- Spawn System Apps
-    local TerminalApp = require("src.apps.terminal_app")
-    local FilerApp = require("src.apps.filer")
-    local EditorApp = require("src.apps.editor")
-    
-    -- Terminal (Always running)
-    -- Pass Terminal (system) as handler because TerminalApp is just a wrapper
-    local Terminal = require("src.system.terminal")
-    Scheduler.add(Process.new("Terminal", TerminalApp.run, Terminal))
-    
-    -- Filer (Windowed)
-    Scheduler.add(Process.new("Filer", FilerApp.run, FilerApp))
-    
-    -- Editor (Windowed)
-    Scheduler.add(Process.new("Löve Edit", EditorApp.run, EditorApp))
+    -- System Apps are now spawned by main.lua or bootloader
 end
 
 

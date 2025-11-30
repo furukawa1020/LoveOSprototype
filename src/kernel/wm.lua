@@ -57,19 +57,6 @@ function WM.update(dt)
     -- Handle dragging
     if focusedWindow and focusedWindow.isDragging then
         local mx, my = love.mouse.getPosition()
-        focusedWindow.x = mx - focusedWindow.dragOffsetX
-        focusedWindow.y = my - focusedWindow.dragOffsetY
-    end
-end
-
-function WM.draw()
-    -- 1. Draw Wallpaper
-    love.graphics.setColor(1, 1, 1)
-    if WM.wallpaper then love.graphics.draw(WM.wallpaper, 0, 0) end
-    
-    -- 2. Draw Windows
-    for _, win in ipairs(windows) do
-        -- Glassmorphism Effect
         -- Capture screen behind window (simplified: just use wallpaper for now for speed)
         -- In a real compositor we'd copy the current screen buffer, but that's expensive in LÖVE without FBO swapping.
         -- We'll just draw a blurred rectangle of the wallpaper color for now to simulate it cheaply.

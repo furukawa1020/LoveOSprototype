@@ -1,10 +1,8 @@
 local Filer = {}
-local VFS = require("src.kernel.vfs")
-local WM = require("src.kernel.wm")
 
-Filer.currentPath = "/"
+Filer.currentPath = "home"
 Filer.items = {}
-Filer.selectedItem = nil
+Filer.selectedIndex = 1
 Filer.scrollOffset = 0
 
 function Filer.init()
@@ -12,15 +10,14 @@ function Filer.init()
 end
 
 function Filer.refresh()
-    Filer.items = VFS.listFiles(Filer.currentPath)
-    -- Sort: Directories first, then files
-    table.sort(Filer.items, function(a, b)
-        if a.type == b.type then
-            return a.name < b.name
-        else
-            return a.type == "directory"
-        end
-    end)
+    Filer.items = sys.listFiles(Filer.currentPath)
+    
+    -- Add parent directory option if not root
+    if Filer.currentPath ~= "" and Filer.currentPath ~= "home" then
+        table.insert(Filer.items, 1, {name = "..", type = "directory", size = 0})
+    end
+    
+    Filer.selectedIndex = 1
 end
 
 function Filer.update(dt)
@@ -28,42 +25,37 @@ function Filer.update(dt)
 end
 
 function Filer.draw()
-    love.graphics.clear(1, 1, 1) -- White background
+    -- Draw Header
+    sys.graphics.setColor(0.8, 0.8, 0.8)
+    sys.graphics.rectangle("fill", 0, 0, 500, 30)
+    sys.graphics.setColor(0, 0, 0)
+    sys.graphics.print("Path: /" .. Filer.currentPath, 10, 8)
     
-    -- Header (Path)
-    love.graphics.setColor(0.9, 0.9, 0.9)
-    love.graphics.rectangle("fill", 0, 0, 640, 30)
-    love.graphics.setColor(0, 0, 0)
-    love.graphics.print("Path: " .. Filer.currentPath, 10, 8)
-    
-    -- Items
+    -- Draw Items
     local y = 40
-    local x = 10
     for i, item in ipairs(Filer.items) do
-        -- Icon
-        if item.type == "directory" then
-            love.graphics.setColor(1, 0.8, 0.4) -- Folder color
-            love.graphics.rectangle("fill", x, y, 40, 30)
-        else
-            love.graphics.setColor(0.8, 0.8, 0.8) -- File color
-            love.graphics.rectangle("fill", x + 5, y, 30, 40)
+        if y > 330 then break end
+        
+        -- Selection Highlight
+        if i == Filer.selectedIndex then
+            sys.graphics.setColor(0.3, 0.3, 0.8, 0.3)
+            sys.graphics.rectangle("fill", 5, y, 490, 20)
         end
         
-        -- Selection
-        if Filer.selectedItem == i then
-            love.graphics.setColor(0, 0, 1, 0.3)
-            love.graphics.rectangle("fill", x - 5, y - 5, 90, 70)
-        end
+        -- Icon
+        sys.graphics.setColor(0, 0, 0)
+        local icon = item.type == "directory" and "[DIR]" or "[FILE]"
+        sys.graphics.print(icon, 10, y + 2)
         
         -- Name
-        love.graphics.setColor(0, 0, 0)
-        love.graphics.printf(item.name, x - 5, y + 45, 90, "center")
+        sys.graphics.print(item.name, 70, y + 2)
         
-        x = x + 100
-        if x > 550 then
-            x = 10
-            y = y + 80
+        -- Size
+        if item.type == "file" then
+            sys.graphics.print(item.size .. " B", 400, y + 2)
         end
+        
+        y = y + 22
     end
 end
 
@@ -73,49 +65,42 @@ function Filer.mousepressed(x, y, button)
     local iy = 40
     for i, item in ipairs(Filer.items) do
         if x >= ix - 5 and x <= ix + 85 and y >= iy - 5 and y <= iy + 65 then
-            if Filer.selectedItem == i then
+            if Filer.selectedIndex == i then
                 -- Double click
                 if item.type == "directory" then
                     if item.name == ".." then
-                        -- Go up (naive implementation)
-                        Filer.currentPath = "/" -- Reset to root for now
+                        -- Go up
+                        Filer.currentPath = Filer.currentPath:match("(.+)/[^/]+$") or ""
+                        if Filer.currentPath == "" then Filer.currentPath = "home" end -- Prevent going above home for now
                     else
-                        -- Enter directory (naive)
-                        if Filer.currentPath == "/" then
-                            Filer.currentPath = "/" .. item.name
+                        -- Enter directory
+                        if Filer.currentPath == "" then
+                            Filer.currentPath = item.name
                         else
                             Filer.currentPath = Filer.currentPath .. "/" .. item.name
                         end
                     end
                     Filer.refresh()
-                    Filer.selectedItem = nil
+                    Filer.selectedIndex = 1
                 else
                     -- Open file
                     -- TODO: Launch Editor
-                    print("Opening file: " .. item.name)
+                    sys.print("Opening file: " .. item.name)
                 end
             else
-                Filer.selectedItem = i
+                Filer.selectedIndex = i
             end
             return
         end
         
-        ix = ix + 100
-        if ix > 550 then
-            ix = 10
-            iy = iy + 80
-        end
+        iy = iy + 22
     end
     
-    Filer.selectedItem = nil
+    Filer.selectedIndex = nil
 end
 
 function Filer.run()
-    local WM = require("src.kernel.wm")
-    local Scheduler = require("src.kernel.scheduler")
-    -- Create Window
-    local process = Scheduler.getCurrentProcess()
-    local win = WM.createWindow(process, "Filer", 50, 50, 600, 400)
+    local win = sys.createWindow("Filer", 50, 50, 500, 350)
     
     Filer.init()
     
@@ -124,15 +109,41 @@ function Filer.run()
         
         Filer.update(dt)
         
-        love.graphics.setCanvas(win.canvas)
+        sys.setCanvas(win.canvas)
+        sys.graphics.clear(0.9, 0.9, 0.9, 1)
         Filer.draw()
-        love.graphics.setCanvas()
+        sys.setCanvas()
     end
 end
 
 function Filer.keypressed(key)
     if key == "f5" then
         Filer.refresh()
+    elseif key == "up" then
+        if Filer.selectedIndex > 1 then Filer.selectedIndex = Filer.selectedIndex - 1 end
+    elseif key == "down" then
+        if Filer.selectedIndex < #Filer.items then Filer.selectedIndex = Filer.selectedIndex + 1 end
+    elseif key == "return" then
+        -- Enter/Open
+        local item = Filer.items[Filer.selectedIndex]
+        if item then
+            if item.type == "directory" then
+                if item.name == ".." then
+                    Filer.currentPath = Filer.currentPath:match("(.+)/[^/]+$") or ""
+                    if Filer.currentPath == "" then Filer.currentPath = "home" end
+                else
+                     if Filer.currentPath == "" then
+                        Filer.currentPath = item.name
+                    else
+                        Filer.currentPath = Filer.currentPath .. "/" .. item.name
+                    end
+                end
+                Filer.refresh()
+                Filer.selectedIndex = 1
+            else
+                sys.print("Opening file: " .. item.name)
+            end
+        end
     end
 end
 

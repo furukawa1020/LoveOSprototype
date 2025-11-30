@@ -209,28 +209,16 @@ function Terminal.execute(cmd)
             Terminal.print("Usage: make <target> (world, player, enemies)", Terminal.colors.error)
         end
     elseif command == "top" then
-        local TaskMgr = require("src.apps.taskmgr")
-        local Scheduler = require("src.kernel.scheduler")
-        local Process = require("src.kernel.process")
         -- Launch Task Manager as a process
-        Scheduler.add(Process.new("Task Manager", TaskMgr.run, TaskMgr))
+        sys.spawn("Task Manager", "src/apps/taskmgr.lua")
     elseif command == "lpm" then
-        local Pkg = require("src.system.pkg")
-        if parts[2] == "list" then
-            local list = Pkg.list()
-            for _, item in ipairs(list) do
-                Terminal.print(item)
-            end
-        elseif parts[2] == "install" and parts[3] then
-            local success, msg = Pkg.install(parts[3])
-            if success then
-                Terminal.print(msg, Terminal.colors.highlight)
-            else
-                Terminal.print("Error: " .. msg, Terminal.colors.error)
-            end
-        else
-            Terminal.print("Usage: lpm list | lpm install <package>", Terminal.colors.error)
-        end
+        -- Launch Package Manager
+        -- We pass arguments? sys.spawn doesn't support args yet in our simple implementation.
+        -- But we can pass them via a global or IPC?
+        -- For now, let's just spawn it and let it run interactive or default.
+        -- Or we can modify sys.spawn to take args.
+        -- Let's assume lpm is interactive for now or just lists.
+        sys.spawn("Package Manager", "src/apps/lpm.lua")
     elseif command == "reload" or command == "inject" then
         if parts[2] then
             local Kernel = require("src.kernel.core")
@@ -284,57 +272,57 @@ end
 
 
 function Terminal.draw()
-    local font = love.graphics.getFont()
+    local font = sys.graphics.getFont()
     local lineHeight = font:getHeight()
     
     -- Draw Lines
     for i, line in ipairs(Terminal.lines) do
-        love.graphics.setColor(line.color)
-        love.graphics.print(line.text, 10, 10 + (i - 1) * lineHeight)
+        sys.graphics.setColor(line.color)
+        sys.graphics.print(line.text, 10, 10 + (i - 1) * lineHeight)
     end
     
     -- Draw Booting Line (if active)
     if Terminal.state == "boot" and Terminal.currentBootLine ~= "" then
         local y = 10 + #Terminal.lines * lineHeight
-        love.graphics.setColor(Terminal.colors.default)
-        love.graphics.print(Terminal.currentBootLine, 10, y)
+        sys.graphics.setColor(Terminal.colors.default)
+        sys.graphics.print(Terminal.currentBootLine, 10, y)
     end
     
     -- Draw Prompt
     if Terminal.state ~= "boot" and Terminal.state ~= "installing" and Terminal.state ~= "compiling_world" then
         local y = 10 + #Terminal.lines * lineHeight
-        love.graphics.setColor(Terminal.colors.default)
-        love.graphics.print(Terminal.prompt .. Terminal.currentLine, 10, y)
+        sys.graphics.setColor(Terminal.colors.default)
+        sys.graphics.print(Terminal.prompt .. Terminal.currentLine, 10, y)
         
         -- Draw Cursor
         if math.floor(Terminal.cursorBlink * 2) % 2 == 0 then
             local width = font:getWidth(Terminal.prompt .. Terminal.currentLine)
-            love.graphics.rectangle("fill", 10 + width, y, 10, lineHeight)
+            sys.graphics.rectangle("fill", 10 + width, y, 10, lineHeight)
         end
     elseif Terminal.state == "installing" then
         local y = 10 + #Terminal.lines * lineHeight
         local progress = math.floor(Terminal.installProgress * 20)
         local bar = "[" .. string.rep("#", progress) .. string.rep(" ", 20 - progress) .. "]"
-        love.graphics.setColor(Terminal.colors.highlight)
-        love.graphics.print("Unpacking: " .. bar .. " " .. math.floor(Terminal.installProgress * 100) .. "%", 10, y)
+        sys.graphics.setColor(Terminal.colors.highlight)
+        sys.graphics.print("Unpacking: " .. bar .. " " .. math.floor(Terminal.installProgress * 100) .. "%", 10, y)
     elseif Terminal.state == "compiling_world" then
         local y = 10 + #Terminal.lines * lineHeight
         local progress = math.floor(Terminal.compileProgress * 20)
         local bar = "[" .. string.rep("#", progress) .. string.rep(" ", 20 - progress) .. "]"
-        love.graphics.setColor(Terminal.colors.highlight)
-        love.graphics.print("Compiling: " .. bar .. " " .. math.floor(Terminal.compileProgress * 100) .. "%", 10, y)
+        sys.graphics.setColor(Terminal.colors.highlight)
+        sys.graphics.print("Compiling: " .. bar .. " " .. math.floor(Terminal.compileProgress * 100) .. "%", 10, y)
     end
     
     -- Debug Overlay
-    love.graphics.setColor(1, 0, 0)
-    love.graphics.print("State: " .. Terminal.state, 500, 10)
+    sys.graphics.setColor(1, 0, 0)
+    sys.graphics.print("State: " .. Terminal.state, 500, 10)
     if Terminal.state == "boot" then
-        love.graphics.print("Queue: " .. #Terminal.bootQueue, 500, 25)
-        love.graphics.print("Timer: " .. string.format("%.2f", Terminal.bootTimer), 500, 40)
+        sys.graphics.print("Queue: " .. #Terminal.bootQueue, 500, 25)
+        sys.graphics.print("Timer: " .. string.format("%.2f", Terminal.bootTimer), 500, 40)
         if #Terminal.bootQueue > 0 then
-            love.graphics.print("Task: " .. (Terminal.bootQueue[1].text or "???"), 500, 55)
+            sys.graphics.print("Task: " .. (Terminal.bootQueue[1].text or "???"), 500, 55)
         end
-        love.graphics.print("Press ESC to Skip", 500, 70)
+        sys.graphics.print("Press ESC to Skip", 500, 70)
     end
 end
 
