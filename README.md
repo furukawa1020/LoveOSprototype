@@ -1,4 +1,4 @@
-# Love OS v11.4
+# Löve OS v11.4
 
 **"Make Love, Not War."**
 
