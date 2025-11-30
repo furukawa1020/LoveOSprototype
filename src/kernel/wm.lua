@@ -1,20 +1,26 @@
 local WM = {}
 local windows = {}
 local focusedWindow = nil
+local Scheduler = require("src.kernel.scheduler")
+local Shader = require("src.system.shader")
 
 WM.wallpaper = nil
+WM.blurCanvas = nil -- Canvas for blurring background
 
 function WM.init()
     -- Create a simple gradient wallpaper or load one
     WM.wallpaper = love.graphics.newCanvas(love.graphics.getWidth(), love.graphics.getHeight())
     love.graphics.setCanvas(WM.wallpaper)
-    -- Retro grid background
+    -- Dynamic "Löve" Wallpaper
     love.graphics.clear(0.1, 0.1, 0.2)
-    love.graphics.setColor(0.2, 0.2, 0.3)
-    local w, h = love.graphics.getDimensions()
-    for x = 0, w, 40 do love.graphics.line(x, 0, x, h) end
-    for y = 0, h, 40 do love.graphics.line(0, y, w, y) end
+    -- Draw some abstract shapes
+    for i = 1, 50 do
+        love.graphics.setColor(math.random()*0.2, math.random()*0.2, math.random()*0.5, 0.5)
+        love.graphics.circle("fill", math.random(0, 1280), math.random(0, 720), math.random(50, 200))
+    end
     love.graphics.setCanvas()
+    
+    WM.blurCanvas = love.graphics.newCanvas(love.graphics.getWidth(), love.graphics.getHeight())
 end
 
 function WM.createWindow(process, title, x, y, w, h)
@@ -57,36 +63,88 @@ function WM.update(dt)
 end
 
 function WM.draw()
-    -- Draw Wallpaper
+    -- 1. Draw Wallpaper
     love.graphics.setColor(1, 1, 1)
     if WM.wallpaper then love.graphics.draw(WM.wallpaper, 0, 0) end
     
-    -- Draw Windows
+    -- 2. Draw Windows
     for _, win in ipairs(windows) do
-        -- Shadow
-        love.graphics.setColor(0, 0, 0, 0.5)
-        love.graphics.rectangle("fill", win.x + 5, win.y + 5, win.w, win.h + 25)
+        -- Glassmorphism Effect
+        -- Capture screen behind window (simplified: just use wallpaper for now for speed)
+        -- In a real compositor we'd copy the current screen buffer, but that's expensive in LÖVE without FBO swapping.
+        -- We'll just draw a blurred rectangle of the wallpaper color for now to simulate it cheaply.
         
-        -- Window Frame
+        -- Window Shadow
+        love.graphics.setColor(0, 0, 0, 0.3)
+        love.graphics.rectangle("fill", win.x + 10, win.y + 10, win.w, win.h + 30, 10)
+        
+        -- Window Background (Glass)
+        love.graphics.setColor(1, 1, 1, 1)
+        
+        -- Send uniforms
+        Shader.blur:send("screen_size", {love.graphics.getWidth(), love.graphics.getHeight()})
+        
+        love.graphics.setShader(Shader.blur)
+        -- Draw the wallpaper section behind the window
+        -- We need to scissor this so we don't draw the whole wallpaper
+        love.graphics.setScissor(win.x, win.y - 30, win.w, win.h + 30)
+        love.graphics.draw(WM.wallpaper, 0, 0) -- Draw wallpaper at 0,0 (it covers screen), scissor clips it
+        love.graphics.setShader()
+        love.graphics.setScissor()
+        
+        -- Tint it white for glass look
+        love.graphics.setColor(0.9, 0.9, 0.95, 0.3)
+        love.graphics.rectangle("fill", win.x, win.y - 30, win.w, win.h + 30, 8)
+        
+        -- Title Bar
         if win == focusedWindow then
-            love.graphics.setColor(0.8, 0.8, 0.9) -- Active
+            love.graphics.setColor(0.2, 0.2, 0.2, 0.8)
         else
-            love.graphics.setColor(0.5, 0.5, 0.6) -- Inactive
+            love.graphics.setColor(0.5, 0.5, 0.5, 0.5)
         end
-        love.graphics.rectangle("fill", win.x, win.y - 25, win.w, 25) -- Title bar
+        love.graphics.rectangle("fill", win.x, win.y - 30, win.w, 30, 8, 8)
         
-        -- Title
-        love.graphics.setColor(0, 0, 0)
-        love.graphics.print(win.title, win.x + 5, win.y - 20)
-        
-        -- Content
+        -- Title Text
         love.graphics.setColor(1, 1, 1)
+        love.graphics.print(win.title, win.x + 10, win.y - 22)
+        
+        -- Window Content
+        love.graphics.setColor(1, 1, 1)
+        -- Clip content to window body
+        love.graphics.setScissor(win.x, win.y, win.w, win.h)
         love.graphics.draw(win.canvas, win.x, win.y)
+        love.graphics.setScissor()
         
         -- Border
-        love.graphics.setColor(0.8, 0.8, 0.9)
-        love.graphics.rectangle("line", win.x, win.y, win.w, win.h)
+        love.graphics.setColor(1, 1, 1, 0.2)
+        love.graphics.rectangle("line", win.x, win.y - 30, win.w, win.h + 30, 8)
     end
+    
+    -- 3. Taskbar (Dock)
+    local screenH = love.graphics.getHeight()
+    local screenW = love.graphics.getWidth()
+    
+    -- Bar Background
+    love.graphics.setColor(0.1, 0.1, 0.1, 0.8)
+    love.graphics.rectangle("fill", 0, screenH - 40, screenW, 40)
+    
+    -- Start Button (Löve)
+    love.graphics.setColor(1, 0.4, 0.6) -- Pink
+    love.graphics.print("Löve", 10, screenH - 30)
+    
+    -- Running Tasks
+    local x = 60
+    for _, proc in ipairs(Scheduler.processes) do
+        love.graphics.setColor(0.3, 0.3, 0.3)
+        love.graphics.rectangle("fill", x, screenH - 35, 100, 30, 5)
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.print(proc.name, x + 10, screenH - 28)
+        x = x + 110
+    end
+    
+    -- Clock
+    love.graphics.setColor(1, 1, 1)
+    love.graphics.print(os.date("%H:%M"), screenW - 50, screenH - 28)
 end
 
 function WM.mousepressed(x, y, button)

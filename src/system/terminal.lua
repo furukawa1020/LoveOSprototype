@@ -4,7 +4,7 @@ local utf8 = require("utf8")
 Terminal.lines = {}
 Terminal.maxLines = 24
 Terminal.currentLine = ""
-Terminal.prompt = "user@love2d:~$ "
+Terminal.prompt = "user@löve:~$ "
 Terminal.cursorBlink = 0
 Terminal.history = {}
 Terminal.historyIndex = 0
@@ -25,11 +25,11 @@ Terminal.colors = {
 
 -- Boot Sequence Data
 local bootSequence = {
-    {text = "LOVE BIOS v11.4 (c) 2006-2025", delay = 0.5},
+    {text = "LÖVE BIOS v11.5 (c) 2006-2025", delay = 0.5},
     {text = "CPU: LUA JIT 2.1.0 detected", delay = 0.2},
     {text = "Memory Test: ", delay = 0, type = "memory"},
     {text = "OK", delay = 0.5},
-    {text = "Detecting Primary Master... LOVE.EXE", delay = 0.3},
+    {text = "Detecting Primary Master... LÖVE.EXE", delay = 0.3},
     {text = "Detecting Primary Slave...  None", delay = 0.1},
     {text = "", delay = 0.5},
     {text = "Booting from Hard Disk...", delay = 1.0},
@@ -39,7 +39,7 @@ local bootSequence = {
     {text = "Initializing graphics...    [OK]", delay = 0.1},
     {text = "Initializing sound...       [OK]", delay = 0.1},
     {text = "", delay = 0.5},
-    {text = "Welcome to Love OS.", delay = 0.1},
+    {text = "Welcome to LöveOS.", delay = 0.1},
     {text = "Type 'help' for commands.", delay = 0.1},
     {text = "", delay = 0}
 }
