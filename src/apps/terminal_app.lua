@@ -7,7 +7,8 @@ local Terminal = require("src.system.terminal")
 
 function TerminalApp.run()
     -- Create Window
-    local win = WM.createWindow(nil, "Terminal", 50, 50, 640, 480)
+    local process = Scheduler.getCurrentProcess()
+    local win = WM.createWindow(process, "Terminal", 50, 50, 640, 480)
     
     -- Initialize Terminal Logic
     Terminal.init()

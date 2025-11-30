@@ -51,4 +51,39 @@ function Kernel.mousereleased(x, y, button)
     Input.mousereleased(x, y, button)
 end
 
+function Kernel.reload(moduleName)
+    if not package.loaded[moduleName] then
+        return false, "Module not loaded"
+    end
+    
+    print("Reloading module: " .. moduleName)
+    
+    -- Unload
+    package.loaded[moduleName] = nil
+    
+    -- Reload
+    local status, result = pcall(require, moduleName)
+    
+    if not status then
+        print("Error reloading " .. moduleName .. ": " .. tostring(result))
+        return false, result
+    end
+    
+    -- Update references if needed
+    if moduleName == "src.kernel.wm" then
+        WM = result
+        -- Re-init WM if needed? Or just swap functions?
+        -- For hot-swapping logic, we usually want to keep state.
+        -- But require returns a new table.
+        -- Ideally we copy functions from new table to old table to preserve state.
+        -- But for now, let's just swap the reference and hope state isn't lost (it will be lost if stored in locals).
+        -- To preserve state, modules should return a stateful object or we use a proxy.
+        -- Let's try a simple swap first.
+    elseif moduleName == "src.kernel.vfs" then
+        VFS = result
+    end
+    
+    return true, "Reloaded " .. moduleName
+end
+
 return Kernel

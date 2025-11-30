@@ -112,8 +112,10 @@ end
 
 function Filer.run()
     local WM = require("src.kernel.wm")
+    local Scheduler = require("src.kernel.scheduler")
     -- Create Window
-    local win = WM.createWindow(nil, "Filer", 50, 50, 600, 400)
+    local process = Scheduler.getCurrentProcess()
+    local win = WM.createWindow(process, "Filer", 50, 50, 600, 400)
     
     Filer.init()
     

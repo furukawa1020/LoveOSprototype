@@ -122,13 +122,33 @@ function Editor.keypressed(key)
         if Editor.cursorX <= utf8.len(Editor.lines[Editor.cursorY]) then Editor.cursorX = Editor.cursorX + 1 end
     elseif key == "s" and love.keyboard.isDown("lctrl") then
         Editor.save()
+    elseif key == "r" and love.keyboard.isDown("lctrl") then
+        Editor.save()
+        -- Try to guess module name from path
+        -- Path: src/kernel/wm.lua -> src.kernel.wm
+        if Editor.filePath then
+            local moduleName = string.gsub(Editor.filePath, "/", ".")
+            moduleName = string.gsub(moduleName, ".lua$", "")
+            -- Remove leading dots if any (e.g. ./src...)
+            moduleName = string.gsub(moduleName, "^%.+", "")
+            
+            local Kernel = require("src.kernel.core")
+            local success, msg = Kernel.reload(moduleName)
+            if success then
+                print("Editor: Reloaded " .. moduleName)
+            else
+                print("Editor: Failed to reload " .. moduleName .. ": " .. tostring(msg))
+            end
+        end
     end
 end
 
 function Editor.run()
     local WM = require("src.kernel.wm")
+    local Scheduler = require("src.kernel.scheduler")
     -- Create Window
-    local win = WM.createWindow(nil, "Löve Edit", 100, 100, 800, 600)
+    local process = Scheduler.getCurrentProcess()
+    local win = WM.createWindow(process, "Löve Edit", 100, 100, 800, 600)
     
     Editor.init()
     

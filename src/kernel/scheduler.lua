@@ -16,12 +16,20 @@ function Scheduler.add(proc)
     return proc
 end
 
+Scheduler.currentProcess = nil
+
+function Scheduler.getCurrentProcess()
+    return Scheduler.currentProcess
+end
+
 function Scheduler.update(dt)
     for i = #Scheduler.processes, 1, -1 do
         local proc = Scheduler.processes[i]
         
         if proc.status == "running" then
+            Scheduler.currentProcess = proc
             proc:resume(dt)
+            Scheduler.currentProcess = nil
         end
         
         if proc.status == "dead" then

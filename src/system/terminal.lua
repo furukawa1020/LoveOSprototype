@@ -207,6 +207,18 @@ function Terminal.execute(cmd)
         else
             Terminal.print("Usage: make <target> (world, player, enemies)", Terminal.colors.error)
         end
+    elseif command == "reload" or command == "inject" then
+        if parts[2] then
+            local Kernel = require("src.kernel.core")
+            local success, msg = Kernel.reload(parts[2])
+            if success then
+                Terminal.print(msg, Terminal.colors.highlight)
+            else
+                Terminal.print("Error: " .. tostring(msg), Terminal.colors.error)
+            end
+        else
+            Terminal.print("Usage: reload <module_name>", Terminal.colors.error)
+        end
     else
         Terminal.print(command .. ": command not found", Terminal.colors.error)
     end
