@@ -1,122 +1,46 @@
--- Love OS Main Entry Point
+-- LöveOS Bootloader
 
--- Constants
-RPG = {} -- Keep global namespace for compatibility if needed later
-RPG.WIDTH = 1280
-RPG.HEIGHT = 720
-RPG.TILE_SIZE = 64
-RPG.SCALE = 1
-
-local Terminal = require("src.system.terminal")
-local Shader = require("src.system.shader")
-local MapState = require("src.state.map") -- Require MapState
-
-local BSOD = require("src.state.bsod")
+local Kernel = require("src.kernel.core")
+local Scheduler = require("src.kernel.scheduler")
+local TerminalApp = require("src.apps.terminal_app")
 
 function love.load()
     love.graphics.setDefaultFilter("nearest", "nearest")
+    love.graphics.setFont(love.graphics.newFont(14))
     
-    -- Setup Font (Retro Monospace if possible, default for now)
-    love.graphics.setFont(love.graphics.newFont(16))
+    -- Initialize Kernel
+    Kernel.init()
     
-    Terminal.init()
-    
-    -- Initialize Assets and MapState (but don't enter it fully yet, just for data)
-    local Assets = require("src.system.assets")
-    Assets.generate()
-    MapState.enter() -- Initialize map data
-    
-    -- Canvas for CRT effect
-    RPG.canvas = love.graphics.newCanvas(RPG.WIDTH, RPG.HEIGHT)
-    RPG.shader = Shader.crt
-    RPG.shader:send("screen_size", {RPG.WIDTH, RPG.HEIGHT})
-    
-    RPG.state = "running" -- running, crashed
-end
-
-function RPG.crash()
-    RPG.state = "crashed"
-    BSOD.enter()
+    -- Spawn Terminal App
+    Scheduler.spawn("Terminal", TerminalApp.run)
 end
 
 function love.update(dt)
-    if RPG.state == "crashed" then
-        BSOD.update(dt)
-        return
-    end
-
-    Terminal.update(dt)
-    
-    -- Update Map/Player only if player is ready
-    if Terminal.state == "player_ready" then
-        MapState.update(dt)
-    end
+    Kernel.update(dt)
 end
 
 function love.draw()
-    if RPG.state == "crashed" then
-        BSOD.draw()
-        return
-    end
-
-    -- Draw to Canvas
-    love.graphics.setCanvas(RPG.canvas)
-    love.graphics.clear(0, 0.05, 0, 1) -- Very dark green background
-    
-    -- Draw World (Behind Terminal)
-    if Terminal.state == "compiling_world" or Terminal.state == "world_ready" or Terminal.state == "player_ready" then
-        -- Calculate limit based on progress
-        local totalTiles = 20 * 12 -- Approx map size (screen size / tile size)
-        -- Actually MapData.width * MapData.height is better but let's just use a large number or 1.0
-        
-        local limit = nil
-        if Terminal.state == "compiling_world" then
-            limit = math.floor(Terminal.compileProgress * 400) -- 400 tiles approx
-        end
-        
-        love.graphics.setColor(1, 1, 1, 0.5) -- Dim the world initially
-        if Terminal.state == "player_ready" then love.graphics.setColor(1, 1, 1, 1) end
-        
-        MapState.draw(limit)
-    end
-    
-    -- Draw Terminal
-    -- If player is ready, maybe hide terminal or make it toggleable?
-    -- For now, keep it overlayed but maybe cleaner.
-    if Terminal.state ~= "player_ready" then
-        Terminal.draw()
-    else
-        -- Minimal terminal or toggle
-        -- Let's just draw it for now, user can clear it.
-        Terminal.draw()
-    end
-    
-    love.graphics.setCanvas()
-    
-    -- Apply CRT Shader
-    love.graphics.setColor(1, 1, 1)
-    love.graphics.setShader(RPG.shader)
-    love.graphics.draw(RPG.canvas, 0, 0)
-    love.graphics.setShader()
+    Kernel.draw()
 end
 
 function love.textinput(t)
-    if RPG.state == "crashed" then return end
+    Kernel.textinput(t)
+    -- Hack: Pass input to Terminal directly for now since Input routing isn't fully done
+    local Terminal = require("src.system.terminal")
     Terminal.textinput(t)
-    local Audio = require("src.system.audio")
-    Audio.playSynth("key")
 end
 
 function love.keypressed(key)
-    if RPG.state == "crashed" then
-        BSOD.keypressed(key)
-        return
-    end
-
-    if key == "escape" then
-        love.event.quit()
-    end
+    Kernel.keypressed(key)
+    -- Hack: Pass input to Terminal directly
+    local Terminal = require("src.system.terminal")
     Terminal.keypressed(key)
-    local Audio = require("src.system.audio")
-    Audio.playSynth("key")
+end
+
+function love.mousepressed(x, y, button)
+    Kernel.mousepressed(x, y, button)
+end
+
+function love.mousereleased(x, y, button)
+    Kernel.mousereleased(x, y, button)
 end
