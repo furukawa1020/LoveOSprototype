@@ -1,7 +1,7 @@
 local Process = {}
 Process.__index = Process
 
-function Process.new(name, func)
+function Process.new(name, func, handler)
     local self = setmetatable({}, Process)
     self.id = love.timer.getTime() .. math.random() -- Simple unique ID
     self.name = name
@@ -9,6 +9,7 @@ function Process.new(name, func)
     self.status = "running" -- running, dead, suspended
     self.window = nil -- Reference to associated window if any
     self.env = {} -- Sandboxed environment (optional)
+    self.handler = handler -- Input handler (App module)
     return self
 end
 

@@ -180,4 +180,8 @@ function WM.getTargetCanvas()
     return nil
 end
 
+function WM.getFocusedWindow()
+    return focusedWindow
+end
+
 return WM

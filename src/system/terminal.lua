@@ -108,14 +108,22 @@ function Terminal.updateBoot(dt)
     -- Typing effect
     local text = currentTask.text
     if Terminal.bootCharIndex <= #text then
-        Terminal.currentBootLine = string.sub(text, 1, Terminal.bootCharIndex)
+        -- Advance by one UTF-8 character
+        local offset = utf8.offset(text, 2, Terminal.bootCharIndex)
+        if offset then
+            Terminal.currentBootLine = string.sub(text, 1, offset - 1)
+            Terminal.bootCharIndex = offset - 1
+        else
+            Terminal.currentBootLine = text
+            Terminal.bootCharIndex = #text
+        end
+        
         Terminal.bootCharIndex = Terminal.bootCharIndex + 1
         Terminal.bootTimer = 0.01 -- Fast typing
         
-        -- Play typing sound (if we had access to audio here, but we'll do it in main)
-        if love.audio then
-             -- Trigger sound event?
-        end
+        -- Play typing sound
+        local Audio = require("src.system.audio")
+        Audio.playSynth("key")
     else
         -- Line finished
         Terminal.print(Terminal.currentBootLine)
@@ -123,13 +131,6 @@ function Terminal.updateBoot(dt)
         Terminal.bootCharIndex = 1
         Terminal.bootTimer = currentTask.delay
         table.remove(Terminal.bootQueue, 1)
-    end
-end
-
-function Terminal.print(text, color)
-    table.insert(Terminal.lines, {text = text, color = color or Terminal.colors.default})
-    if #Terminal.lines > Terminal.maxLines then
-        table.remove(Terminal.lines, 1)
     end
 end
 

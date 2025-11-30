@@ -10,6 +10,12 @@ function Scheduler.spawn(name, func)
     return proc
 end
 
+function Scheduler.add(proc)
+    table.insert(Scheduler.processes, proc)
+    print("Added process: " .. proc.name)
+    return proc
+end
+
 function Scheduler.update(dt)
     for i = #Scheduler.processes, 1, -1 do
         local proc = Scheduler.processes[i]

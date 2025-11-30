@@ -3,13 +3,27 @@ local Scheduler = require("src.kernel.scheduler")
 local WM = require("src.kernel.wm")
 local VFS = require("src.kernel.vfs")
 local Input = require("src.kernel.input")
+local Process = require("src.kernel.process")
 
 function Kernel.init()
     VFS.init()
     WM.init()
     
-    -- Spawn initial processes
-    -- Scheduler.spawn("Terminal", TerminalApp.run)
+    -- Spawn System Apps
+    local TerminalApp = require("src.apps.terminal_app")
+    local FilerApp = require("src.apps.filer")
+    local EditorApp = require("src.apps.editor")
+    
+    -- Terminal (Always running)
+    -- Pass Terminal (system) as handler because TerminalApp is just a wrapper
+    local Terminal = require("src.system.terminal")
+    Scheduler.add(Process.new("Terminal", TerminalApp.run, Terminal))
+    
+    -- Filer (Windowed)
+    Scheduler.add(Process.new("Filer", FilerApp.run, FilerApp))
+    
+    -- Editor (Windowed)
+    Scheduler.add(Process.new("Löve Edit", EditorApp.run, EditorApp))
 end
 
 function Kernel.update(dt)
@@ -23,12 +37,6 @@ end
 
 function Kernel.textinput(t)
     Input.textinput(t)
-    -- Also pass to focused window canvas if needed
-    local canvas = WM.getTargetCanvas()
-    if canvas then
-        -- We can't easily "push" text input to a canvas without a process handling it
-        -- The process needs to poll or receive events
-    end
 end
 
 function Kernel.keypressed(key)
