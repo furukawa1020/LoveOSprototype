@@ -39,9 +39,9 @@ function Bug.update(bug, dt, player)
     
     -- Collision with Player (Game Over check)
     if dist < 32 then
-        -- Trigger Game Over / BSOD
-        -- For now, just print to console or set a flag
-        -- In a real implementation, we'd switch state
+        if RPG.crash then
+            RPG.crash()
+        end
     end
 end
 
