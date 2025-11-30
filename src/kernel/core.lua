@@ -26,10 +26,6 @@ function Kernel.init()
     Scheduler.add(Process.new("Löve Edit", EditorApp.run, EditorApp))
 end
 
-function Kernel.update(dt)
-    Scheduler.update(dt)
-    WM.update(dt)
-end
 
 function Kernel.draw()
     WM.draw()
@@ -84,6 +80,36 @@ function Kernel.reload(moduleName)
     end
     
     return true, "Reloaded " .. moduleName
+end
+
+Kernel.shutdownTimer = 0
+Kernel.isShuttingDown = false
+
+function Kernel.reboot()
+    print("System Reboot Initiated...")
+    Kernel.isShuttingDown = true
+    Kernel.shutdownTimer = 1.0 -- Wait 1 second for sound
+    
+    -- Play Shutdown/Reboot Sound
+    local Audio = require("src.system.audio")
+    -- We need a specific sound. Let's use a sequence of synth tones.
+    -- "Pico-Pico" sound
+    Audio.playSynth("key")
+    -- We can't easily sequence in Audio yet without a timer, so just play one or assume Audio handles it.
+    -- Let's just play a simple tone for now.
+end
+
+function Kernel.update(dt)
+    if Kernel.isShuttingDown then
+        Kernel.shutdownTimer = Kernel.shutdownTimer - dt
+        if Kernel.shutdownTimer <= 0 then
+            love.event.quit("restart")
+        end
+        return -- Stop updating other things?
+    end
+
+    Scheduler.update(dt)
+    WM.update(dt)
 end
 
 return Kernel

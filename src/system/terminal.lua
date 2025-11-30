@@ -159,7 +159,8 @@ function Terminal.execute(cmd)
     elseif command == "ls" then
         Terminal.print("readme.txt  kernel.sys  love.tar.gz")
     elseif command == "reboot" then
-        love.event.quit("restart")
+        local Kernel = require("src.kernel.core")
+        Kernel.reboot()
     elseif command == "man" then
         if parts[2] == "love" then
             Terminal.print("NAME", Terminal.colors.highlight)
