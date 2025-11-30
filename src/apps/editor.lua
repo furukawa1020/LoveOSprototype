@@ -1,5 +1,5 @@
 local Editor = {}
-local utf8 = require("utf8")
+-- utf8 is injected by sandbox
 
 Editor.lines = {""}
 Editor.cursorX = 1

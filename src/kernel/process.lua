@@ -16,6 +16,7 @@ function Process.new(name, pathOrFunc, isPath)
         table = table, string = string, math = math,
         os = {date = os.date, time = os.time, clock = os.clock},
         coroutine = coroutine,
+        utf8 = require("utf8"), -- Inject utf8 lib
     }
     self.env = env
     

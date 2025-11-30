@@ -86,6 +86,27 @@ function Syscall.createInterface(process)
         IPC.subscribe(channel, callback)
     end
     
+    -- Process Management
+    function interface.getProcesses()
+        local list = {}
+        for _, proc in ipairs(Scheduler.processes) do
+            table.insert(list, {
+                id = proc.id,
+                name = proc.name,
+                status = proc.status
+            })
+        end
+        return list
+    end
+    
+    function interface.getProcessInfo()
+        return {
+            id = process.id,
+            name = process.name,
+            status = process.status
+        }
+    end
+
     -- Time
     function interface.getTime()
         return love.timer.getTime()
@@ -93,6 +114,15 @@ function Syscall.createInterface(process)
     
     function interface.getFPS()
         return love.timer.getFPS()
+    end
+    
+    -- Audio
+    interface.audio = {}
+    function interface.audio.play(type)
+        -- We need to access Audio module. 
+        -- Since Syscall is in kernel, we can require it.
+        local Audio = require("src.system.audio")
+        Audio.playSynth(type)
     end
     
     return interface

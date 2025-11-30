@@ -1,5 +1,5 @@
 local Terminal = {}
-local utf8 = require("utf8")
+-- utf8 is injected by sandbox
 
 Terminal.lines = {}
 Terminal.maxLines = 24
@@ -44,6 +44,23 @@ local bootSequence = {
     {text = "", delay = 0}
 }
 
+function Terminal.run()
+    local win = sys.createWindow("Terminal", 50, 50, 640, 480)
+    
+    Terminal.init()
+    
+    while true do
+        local dt = coroutine.yield()
+        
+        Terminal.update(dt)
+        
+        sys.setCanvas(win.canvas)
+        sys.graphics.clear(0, 0, 0, 1) -- Black background
+        Terminal.draw()
+        sys.setCanvas()
+    end
+end
+
 function Terminal.init()
     Terminal.lines = {}
     Terminal.currentLine = ""
@@ -64,13 +81,13 @@ function Terminal.update(dt)
     if Terminal.state == "boot" then
         Terminal.updateBoot(dt)
     elseif Terminal.state == "installing" then
-        Terminal.installProgress = Terminal.installProgress + dt * 0.2 -- Slower, more realistic
+        Terminal.installProgress = Terminal.installProgress + dt * 0.2
         if Terminal.installProgress >= 1 then
             Terminal.installProgress = 1
             Terminal.finishInstall()
         end
     elseif Terminal.state == "compiling_world" then
-        Terminal.compileProgress = Terminal.compileProgress + dt * 0.5 -- 2 seconds to compile
+        Terminal.compileProgress = Terminal.compileProgress + dt * 0.5
         if Terminal.compileProgress >= 1 then
             Terminal.compileProgress = 1
             Terminal.state = "world_ready"
@@ -122,8 +139,9 @@ function Terminal.updateBoot(dt)
         Terminal.bootTimer = 0.01 -- Fast typing
         
         -- Play typing sound
-        local Audio = require("src.system.audio")
-        Audio.playSynth("key")
+        if sys.audio then
+            sys.audio.play("key")
+        end
     else
         -- Line finished
         Terminal.print(Terminal.currentBootLine)

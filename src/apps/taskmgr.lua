@@ -1,7 +1,5 @@
 local TaskMgr = {}
-local WM = require("src.kernel.wm")
-local Scheduler = require("src.kernel.scheduler")
-local HAL = require("src.kernel.hal")
+-- Requires removed for sandbox compliance
 
 TaskMgr.history = {
     cpu = {},
@@ -19,7 +17,7 @@ function TaskMgr.init()
 end
 
 function TaskMgr.run()
-    local process = Scheduler.getCurrentProcess()
+    local process = sys.getProcessInfo()
     local win = sys.createWindow("Task Manager", 200, 100, 400, 300)
     
     TaskMgr.init()
@@ -69,7 +67,8 @@ function TaskMgr.run()
         sys.graphics.print("Processes:", 10, 100)
         
         local y = 120
-        for i, proc in ipairs(Scheduler.processes) do
+        local processes = sys.getProcesses()
+        for i, proc in ipairs(processes) do
             if y > 280 then break end
             sys.graphics.setColor(0.2, 0.2, 0.2)
             if i % 2 == 0 then sys.graphics.setColor(0.25, 0.25, 0.25) end

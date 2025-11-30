@@ -57,10 +57,21 @@ function WM.update(dt)
     -- Handle dragging
     if focusedWindow and focusedWindow.isDragging then
         local mx, my = love.mouse.getPosition()
-        -- Capture screen behind window (simplified: just use wallpaper for now for speed)
-        -- In a real compositor we'd copy the current screen buffer, but that's expensive in LÖVE without FBO swapping.
-        -- We'll just draw a blurred rectangle of the wallpaper color for now to simulate it cheaply.
-        
+        focusedWindow.x = mx - focusedWindow.dragOffsetX
+        focusedWindow.y = my - focusedWindow.dragOffsetY
+    end
+end
+
+function WM.draw()
+    -- Reset canvas to screen
+    love.graphics.setCanvas()
+
+    -- 1. Draw Wallpaper
+    love.graphics.setColor(1, 1, 1)
+    if WM.wallpaper then love.graphics.draw(WM.wallpaper, 0, 0) end
+    
+    -- 2. Draw Windows
+    for _, win in ipairs(windows) do
         -- Window Shadow
         love.graphics.setColor(0, 0, 0, 0.3)
         love.graphics.rectangle("fill", win.x + 10, win.y + 10, win.w, win.h + 30, 10)
@@ -73,9 +84,8 @@ function WM.update(dt)
         
         love.graphics.setShader(Shader.blur)
         -- Draw the wallpaper section behind the window
-        -- We need to scissor this so we don't draw the whole wallpaper
         love.graphics.setScissor(win.x, win.y - 30, win.w, win.h + 30)
-        love.graphics.draw(WM.wallpaper, 0, 0) -- Draw wallpaper at 0,0 (it covers screen), scissor clips it
+        love.graphics.draw(WM.wallpaper, 0, 0)
         love.graphics.setShader()
         love.graphics.setScissor()
         
@@ -97,7 +107,6 @@ function WM.update(dt)
         
         -- Window Content
         love.graphics.setColor(1, 1, 1)
-        -- Clip content to window body
         love.graphics.setScissor(win.x, win.y, win.w, win.h)
         love.graphics.draw(win.canvas, win.x, win.y)
         love.graphics.setScissor()
