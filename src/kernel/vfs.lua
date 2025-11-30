@@ -2,6 +2,7 @@ local VFS = {}
 
 -- File System Structure
 -- / (Root) -> Mapped to love.filesystem (Source + Save Directory)
+-- /dev (Virtual) -> Mapped to HAL
 
 VFS.root = {
     type = "mount",
@@ -16,16 +17,9 @@ end
 
 -- Helper to traverse path
 local function traverse(path)
-    -- Simplified: Root is always love filesystem
-    -- We can just pass the path directly to love.filesystem
-    -- But we might want virtual directories later (like /proc)
-    
-    -- For now, let's just assume everything is love filesystem
-    -- unless we add special virtual paths.
-    
     -- Check for virtual paths
-    if path:sub(1, 5) == "/proc" then
-        return "virtual", path
+    if path:sub(1, 4) == "/dev" then
+        return "dev", path:sub(6) -- Return relative path after /dev/
     end
     
     -- Remove leading slash
@@ -57,6 +51,13 @@ function VFS.read(path)
     
     if type == "love" then
         return love.filesystem.read(target)
+    elseif type == "dev" then
+        local HAL = require("src.kernel.hal")
+        if target == "gpu" then return HAL.getGPUStats() end
+        if target == "mem" then return HAL.getMemoryStats() end
+        if target == "battery" then return HAL.getPowerInfo() end
+        if target == "os" then return HAL.getSystemInfo() end
+        return nil, "Device not found"
     else
         return nil, "File not found"
     end
@@ -80,6 +81,14 @@ function VFS.listFiles(path)
             end
         end
         return items
+    elseif type == "dev" then
+        -- List virtual devices
+        return {
+            {name = "gpu", type = "file", size = 0},
+            {name = "mem", type = "file", size = 0},
+            {name = "battery", type = "file", size = 0},
+            {name = "os", type = "file", size = 0}
+        }
     else
         return {}
     end

@@ -208,6 +208,29 @@ function Terminal.execute(cmd)
         else
             Terminal.print("Usage: make <target> (world, player, enemies)", Terminal.colors.error)
         end
+    elseif command == "top" then
+        local TaskMgr = require("src.apps.taskmgr")
+        local Scheduler = require("src.kernel.scheduler")
+        local Process = require("src.kernel.process")
+        -- Launch Task Manager as a process
+        Scheduler.add(Process.new("Task Manager", TaskMgr.run, TaskMgr))
+    elseif command == "lpm" then
+        local Pkg = require("src.system.pkg")
+        if parts[2] == "list" then
+            local list = Pkg.list()
+            for _, item in ipairs(list) do
+                Terminal.print(item)
+            end
+        elseif parts[2] == "install" and parts[3] then
+            local success, msg = Pkg.install(parts[3])
+            if success then
+                Terminal.print(msg, Terminal.colors.highlight)
+            else
+                Terminal.print("Error: " .. msg, Terminal.colors.error)
+            end
+        else
+            Terminal.print("Usage: lpm list | lpm install <package>", Terminal.colors.error)
+        end
     elseif command == "reload" or command == "inject" then
         if parts[2] then
             local Kernel = require("src.kernel.core")
