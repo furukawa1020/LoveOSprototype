@@ -3,8 +3,14 @@ local WM = require("src.kernel.wm")
 
 function Input.textinput(t)
     local win = WM.getFocusedWindow()
-    if win and win.process and win.process.handler and win.process.handler.textinput then
-        win.process.handler.textinput(t)
+    if win then
+        if win.process and win.process.handler and win.process.handler.textinput then
+            win.process.handler.textinput(t)
+        else
+            print("Input: Window " .. win.title .. " has no handler/textinput")
+        end
+    else
+        print("Input: No focused window")
     end
 end
 

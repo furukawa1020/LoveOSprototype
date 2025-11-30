@@ -252,32 +252,13 @@ function Terminal.textinput(t)
     end
 end
 
-function Terminal.keypressed(key)
-    if Terminal.state == "boot" or Terminal.state == "installing" or Terminal.state == "compiling_world" then return end
-
-    if key == "backspace" then
-        local byteoffset = utf8.offset(Terminal.currentLine, -1)
-        if byteoffset then
-            Terminal.currentLine = string.sub(Terminal.currentLine, 1, byteoffset - 1)
-        end
-    elseif key == "return" then
-        Terminal.execute(Terminal.currentLine)
-        Terminal.currentLine = ""
-    elseif key == "up" then
-        if Terminal.historyIndex > 1 then
-            Terminal.historyIndex = Terminal.historyIndex - 1
-            Terminal.currentLine = Terminal.history[Terminal.historyIndex]
-        end
-    elseif key == "down" then
-        if Terminal.historyIndex < #Terminal.history then
-            Terminal.historyIndex = Terminal.historyIndex + 1
-            Terminal.currentLine = Terminal.history[Terminal.historyIndex]
-        elseif Terminal.historyIndex == #Terminal.history then
-            Terminal.historyIndex = Terminal.historyIndex + 1
-            Terminal.currentLine = ""
-        end
+function Terminal.print(text, color)
+    table.insert(Terminal.lines, {text = text, color = color or Terminal.colors.default})
+    if #Terminal.lines > Terminal.maxLines then
+        table.remove(Terminal.lines, 1)
     end
 end
+
 
 function Terminal.draw()
     local font = love.graphics.getFont()
@@ -319,6 +300,52 @@ function Terminal.draw()
         local bar = "[" .. string.rep("#", progress) .. string.rep(" ", 20 - progress) .. "]"
         love.graphics.setColor(Terminal.colors.highlight)
         love.graphics.print("Compiling: " .. bar .. " " .. math.floor(Terminal.compileProgress * 100) .. "%", 10, y)
+    end
+    
+    -- Debug Overlay
+    love.graphics.setColor(1, 0, 0)
+    love.graphics.print("State: " .. Terminal.state, 500, 10)
+    if Terminal.state == "boot" then
+        love.graphics.print("Queue: " .. #Terminal.bootQueue, 500, 25)
+        love.graphics.print("Timer: " .. string.format("%.2f", Terminal.bootTimer), 500, 40)
+        if #Terminal.bootQueue > 0 then
+            love.graphics.print("Task: " .. (Terminal.bootQueue[1].text or "???"), 500, 55)
+        end
+        love.graphics.print("Press ESC to Skip", 500, 70)
+    end
+end
+
+function Terminal.keypressed(key)
+    if Terminal.state == "boot" and key == "escape" then
+        Terminal.state = "active"
+        Terminal.lines = {}
+        Terminal.print("Boot skipped.")
+        return
+    end
+    
+    if Terminal.state == "boot" or Terminal.state == "installing" or Terminal.state == "compiling_world" then return end
+
+    if key == "backspace" then
+        local byteoffset = utf8.offset(Terminal.currentLine, -1)
+        if byteoffset then
+            Terminal.currentLine = string.sub(Terminal.currentLine, 1, byteoffset - 1)
+        end
+    elseif key == "return" then
+        Terminal.execute(Terminal.currentLine)
+        Terminal.currentLine = ""
+    elseif key == "up" then
+        if Terminal.historyIndex > 1 then
+            Terminal.historyIndex = Terminal.historyIndex - 1
+            Terminal.currentLine = Terminal.history[Terminal.historyIndex]
+        end
+    elseif key == "down" then
+        if Terminal.historyIndex < #Terminal.history then
+            Terminal.historyIndex = Terminal.historyIndex + 1
+            Terminal.currentLine = Terminal.history[Terminal.historyIndex]
+        elseif Terminal.historyIndex == #Terminal.history then
+            Terminal.historyIndex = Terminal.historyIndex + 1
+            Terminal.currentLine = ""
+        end
     end
 end
 

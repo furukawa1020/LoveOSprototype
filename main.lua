@@ -10,9 +10,6 @@ function love.load()
     
     -- Initialize Kernel
     Kernel.init()
-    
-    -- Spawn Terminal App
-    Scheduler.spawn("Terminal", TerminalApp.run)
 end
 
 function love.update(dt)
@@ -25,16 +22,10 @@ end
 
 function love.textinput(t)
     Kernel.textinput(t)
-    -- Hack: Pass input to Terminal directly for now since Input routing isn't fully done
-    local Terminal = require("src.system.terminal")
-    Terminal.textinput(t)
 end
 
 function love.keypressed(key)
     Kernel.keypressed(key)
-    -- Hack: Pass input to Terminal directly
-    local Terminal = require("src.system.terminal")
-    Terminal.keypressed(key)
 end
 
 function love.mousepressed(x, y, button)
