@@ -16,18 +16,6 @@ Shader.crt = love.graphics.newShader[[
         scanline = (scanline + 1.0) * 0.5;
         scanline = 1.0 - (scanline * 0.2); // Intensity
         
-        // Vignette
-        vec2 uv = texture_coords * (1.0 - texture_coords.yx);
-        float vig = uv.x * uv.y * 15.0;
-        vig = pow(vig, 0.25);
-        
-        return texColor * color * vec4(vec3(scanline * vig), 1.0);
-    }
-]]
-
-Shader.dream = love.graphics.newShader[[
-    extern number time;
-    
     vec4 position(mat4 transform_projection, vec4 vertex_position) {
         // Wobble effect
         vertex_position.x += sin(time * 2.0 + vertex_position.y * 0.05) * 10.0;
