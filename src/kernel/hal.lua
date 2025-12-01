@@ -22,7 +22,6 @@ function HAL.getGPUStats()
         stats.fonts
     )
 end
-
 function HAL.getMemoryStats()
     local count = collectgarbage("count")
     return string.format("Lua Memory Usage: %.2f KB (%.2f MB)", count, count / 1024)
@@ -30,16 +29,16 @@ end
 
 function HAL.getPowerInfo()
     local state, percent, seconds = love.system.getPowerInfo()
-    return string.format("Power: %s\nBattery: %d%%\nTime Left: %.1f min", state, percent or 100, (seconds or 0) / 60)
+    if state == "unknown" then return "Power: Unknown" end
+    if state == "nobattery" then return "Power: AC" end
+    return string.format("Battery: %d%% (%s)", percent, state)
 end
 
 function HAL.getSystemInfo()
-    return string.format(
-        "OS: %s\nProcessor Count: %d\nUptime: %.2f s",
-        love.system.getOS(),
-        love.system.getProcessorCount(),
-        love.timer.getTime()
-    )
+    local os = love.system.getOS()
+    local cores = love.system.getProcessorCount()
+    local model = "PC"
+    return string.format("OS: %s\nCores: %d\nModel: %s", os, cores, model)
 end
 
 return HAL

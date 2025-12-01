@@ -12,10 +12,7 @@ function Kernel.init()
     Users.init()
     local Net = require("src.kernel.net")
     Net.init()
-    
-    -- System Apps are now spawned by main.lua or bootloader
 end
-
 
 function Kernel.draw()
     WM.draw()
@@ -24,7 +21,6 @@ end
 function Kernel.textinput(t)
     Input.textinput(t)
 end
-
 function Kernel.keypressed(key)
     Input.keypressed(key)
 end
@@ -100,6 +96,8 @@ function Kernel.update(dt)
 
     Scheduler.update(dt)
     WM.update(dt)
+    local Net = require("src.kernel.net")
+    Net.update(dt)
 end
 
 return Kernel

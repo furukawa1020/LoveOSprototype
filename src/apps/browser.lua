@@ -8,36 +8,50 @@ Browser.content = {}
 Browser.scroll = 0
 Browser.status = "Ready"
 
+function Browser.navigate(url)
+    Browser.status = "Requesting..."
+    Browser.url = url
+    
+    -- Async Request
+    local id, err = sys.net.http.request(url)
+    if not id then
+        Browser.status = "Error: " .. tostring(err)
+        return
+    end
+    
+    Browser.requestId = id
+    Browser.status = "Loading..."
+end
+
+function Browser.update(dt)
+    if Browser.requestId then
+        local body, code = sys.net.http.check(Browser.requestId)
+        if body then
+            -- Done
+            if code == 200 then
+                Browser.content = HTML.parse(body)
+                Browser.status = "Done"
+            else
+                Browser.content = HTML.parse("<h1>Error " .. code .. "</h1><p>Request failed.</p>")
+                Browser.status = "Error " .. code
+            end
+            Browser.requestId = nil
+        end
+    end
+end
+
 function Browser.run()
     local win = sys.createWindow("Browser", 50, 50, 800, 600)
     Browser.navigate(Browser.url)
     
     while true do
         local dt = coroutine.yield()
+        Browser.update(dt)
         
         sys.setCanvas(win.canvas)
         Browser.draw()
         sys.setCanvas()
     end
-end
-
-function Browser.navigate(url)
-    Browser.status = "Loading..."
-    Browser.url = url
-    
-    -- Fetch content
-    local html, code = sys.net.http.get(url)
-    
-    if code == 200 then
-        Browser.content = HTML.parse(html)
-        Browser.status = "Done"
-    else
-        Browser.content = HTML.parse("<h1>Error " .. code .. "</h1><p>" .. html .. "</p>")
-        Browser.status = "Error"
-    end
-    
-    -- History
-    -- Simplified history management
 end
 
 function Browser.draw()

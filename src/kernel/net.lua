@@ -134,13 +134,38 @@ Net.http.thread = nil
 Net.http.channelIn = nil
 Net.http.channelOut = nil
 
+Net.http.sites = {
+    ["http://love.os/"] = [[
+        <h1>Welcome to LoveOS</h1>
+        <p>The operating system with soul.</p>
+        <hr>
+        <p>Links:</p>
+        <a href="http://love.os/about">About Us</a>
+        <a href="http://love.os/news">Latest News</a>
+    ]],
+    ["http://love.os/about"] = [[
+        <h1>About LoveOS</h1>
+        <p>Built with Love2D and Lua.</p>
+        <p>Designed for fun and creativity.</p>
+        <a href="http://love.os/">Back Home</a>
+    ]],
+    ["http://love.os/news"] = [[
+        <h1>Latest News</h1>
+        <p>2025-12-01: Browser Released!</p>
+        <p>2025-11-30: Paint App Added.</p>
+        <a href="http://love.os/">Back Home</a>
+    ]]
+}
+
 function Net.init()
     -- Start HTTP Thread
     local threadCode = [[
         local http = require("socket.http")
-        local love = require("love")
-        local channelIn = love.thread.getChannel("net_http_request")
-        local channelOut = love.thread.getChannel("net_http_response")
+        local timer = require("love.timer")
+        local thread = require("love.thread")
+        
+        local channelIn = thread.getChannel("net_http_request")
+        local channelOut = thread.getChannel("net_http_response")
         
         while true do
             local req = channelIn:pop()
@@ -148,7 +173,7 @@ function Net.init()
                 local body, code, headers = http.request(req.url)
                 channelOut:push({id = req.id, body = body, code = code})
             end
-            love.timer.sleep(0.01)
+            timer.sleep(0.01)
         end
     ]]
     Net.http.thread = love.thread.newThread(threadCode)

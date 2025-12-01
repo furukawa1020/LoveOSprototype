@@ -217,9 +217,14 @@ function Syscall.createInterface(process)
     end
     
     interface.net.http = {}
-    function interface.net.http.get(url)
+    function interface.net.http.request(url)
         local Net = require("src.kernel.net")
-        return Net.http.get(url)
+        return Net.http.request(url)
+    end
+    
+    function interface.net.http.check(id)
+        local Net = require("src.kernel.net")
+        return Net.http.check(id)
     end
     
     -- Notifications
