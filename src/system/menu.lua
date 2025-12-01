@@ -27,6 +27,16 @@ Menu.items = {
         local Scheduler = require("src.kernel.scheduler")
         Scheduler.add(Process.new("Task Manager", "src/apps/taskmgr.lua", true))
     end},
+    {name = "Settings", icon = "settings", action = function() 
+        local Process = require("src.kernel.process")
+        local Scheduler = require("src.kernel.scheduler")
+        Scheduler.add(Process.new("Settings", "src/apps/settings.lua", true))
+    end},
+    {name = "Clock", icon = "clock", action = function() 
+        local Process = require("src.kernel.process")
+        local Scheduler = require("src.kernel.scheduler")
+        Scheduler.add(Process.new("Clock", "src/apps/clock.lua", true))
+    end},
     {name = "Logout", icon = "logout", action = function() 
         love.event.quit("restart")
     end},

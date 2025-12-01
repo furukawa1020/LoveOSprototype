@@ -119,10 +119,30 @@ function Syscall.createInterface(process)
     -- Audio
     interface.audio = {}
     function interface.audio.play(type)
-        -- We need to access Audio module. 
-        -- Since Syscall is in kernel, we can require it.
         local Audio = require("src.system.audio")
         Audio.playSynth(type)
+    end
+    
+    function interface.audio.playTone(freq, duration)
+        local Audio = require("src.system.audio")
+        Audio.playTone(freq, duration)
+    end
+    
+    function interface.audio.setVolume(vol)
+        local Audio = require("src.system.audio")
+        Audio.setVolume(vol)
+    end
+    
+    -- Registry
+    interface.registry = {}
+    function interface.registry.get(key)
+        local Registry = require("src.system.registry")
+        return Registry.get(key)
+    end
+    
+    function interface.registry.set(key, value)
+        local Registry = require("src.system.registry")
+        Registry.set(key, value)
     end
     
     -- User Management

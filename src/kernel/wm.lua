@@ -214,6 +214,8 @@ function WM.mousepressed(x, y, button)
     end
 end
 
+local Registry = require("src.system.registry")
+
 function WM.update(dt)
     -- Update Notifications
     local Notify = require("src.system.notify")
@@ -223,6 +225,20 @@ function WM.update(dt)
         local mx, my = love.mouse.getPosition()
         draggingWindow.x = mx - dragOffsetX
         draggingWindow.y = my - dragOffsetY
+    end
+    
+    -- Check for wallpaper change
+    local color = Registry.get("wallpaperColor")
+    if color and (WM.lastColor ~= color) then
+        WM.lastColor = color
+        love.graphics.setCanvas(WM.wallpaper)
+        love.graphics.clear(color)
+        -- Redraw pattern?
+        for i = 1, 50 do
+            love.graphics.setColor(math.random()*0.2, math.random()*0.2, math.random()*0.5, 0.5)
+            love.graphics.circle("fill", math.random(0, 1280), math.random(0, 720), math.random(50, 200))
+        end
+        love.graphics.setCanvas()
     end
 end
 

@@ -1,10 +1,12 @@
 local Audio = {}
 
+Audio.volume = 0.5
 Audio.sources = {}
 Audio.bgm = {}
 Audio.currentBGM = nil
 Audio.bgmTimer = 0
 Audio.bgmNote = 1
+Audio.reverbEnabled = false
 
 -- Simple waveforms
 local function generateWave(type, duration, freq)
@@ -21,10 +23,12 @@ local function generateWave(type, duration, freq)
             sample = (math.random() * 2 - 1) * 0.5
         elseif type == "saw" then
             sample = ((t * freq) % 1) * 2 - 1
+        elseif type == "sine" then
+            sample = math.sin(t * freq * 2 * math.pi)
         end
         
         -- Envelope (Fade out)
-        sample = sample * (1 - i / length)
+        sample = sample * (1 - i / length) * Audio.volume
         
         data:setSample(i, sample)
     end
@@ -46,37 +50,50 @@ end
 function Audio.playSynth(type)
     local sampleRate = 44100
     local duration = 0.1
+    local freq = 440
+    
+    if type == "key" then freq = 2000; duration = 0.05 end
+    if type == "boot" then freq = 523.25; duration = 0.5 end
+    if type == "error" then freq = 110; duration = 0.3 end
+    if type == "notify" then freq = 880; duration = 0.2 end
+    if type == "click" then freq = 2200; duration = 0.01 end
+    
     local data = love.sound.newSoundData(math.floor(sampleRate * duration), sampleRate, 16, 1)
     
     for i = 0, data:getSampleCount() - 1 do
         local t = i / sampleRate
-        local value = 0
-        
-        if type == "key" then
-            -- High pitched blip
-            value = math.sin(t * 2000 * math.pi * 2) * (1 - t/duration) * 0.1
-        elseif type == "boot" then
-            -- Ascending chime
-            duration = 0.5
-            value = math.sin(t * (440 + t * 440) * math.pi * 2) * 0.2
-        elseif type == "hdd" then
-            -- Random crunch
-            value = (math.random() * 2 - 1) * 0.1
-        end
-        
+        local value = math.sin(t * freq * 2 * math.pi) * (1 - t/duration) * 0.5 * Audio.volume
         data:setSample(i, value)
     end
     
     local source = love.audio.newSource(data, "static")
     source:play()
-    -- We don't need to track these strictly if they are static and auto-GC'd, 
-    -- but keeping them in a list prevents early GC if playing.
-    table.insert(Audio.sources, source)
+end
+
+function Audio.playTone(freq, duration)
+    local sampleRate = 44100
+    local samples = math.floor(duration * sampleRate)
+    local data = love.sound.newSoundData(samples, sampleRate, 16, 1)
+    
+    for i = 0, samples - 1 do
+        local t = i / sampleRate
+        local value = math.sin(t * freq * 2 * math.pi) * 0.5 * Audio.volume
+        data:setSample(i, value)
+    end
+    
+    local source = love.audio.newSource(data, "static")
+    source:play()
+end
+
+function Audio.setVolume(vol)
+    Audio.volume = math.max(0, math.min(1, vol))
 end
 
 function Audio.playSFX(name)
     if Audio.sources[name] and Audio.sources[name].clone then
-        Audio.sources[name]:clone():play()
+        local s = Audio.sources[name]:clone()
+        s:setVolume(Audio.volume)
+        s:play()
     end
 end
 
@@ -105,9 +122,6 @@ function Audio.setReverb(enable)
 end
 
 function Audio.update(dt)
-    -- Clean up sources list (simple check)
-    -- In a real engine we'd be more careful, but for this proto it's fine.
-    
     if not Audio.currentBGM then return end
     
     local tempo = 0.2 -- Seconds per note
@@ -123,7 +137,7 @@ function Audio.update(dt)
             
             -- Play note
             local note = generateWave("square", tempo * 0.8, freq)
-            note:setVolume(0.2) -- Lower volume for BGM
+            note:setVolume(0.2 * Audio.volume) -- Lower volume for BGM
             
             if Audio.reverbEnabled then
                 note:setEffect("reverb")
