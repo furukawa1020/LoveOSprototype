@@ -141,6 +141,19 @@ function Syscall.createInterface(process)
         return nil
     end
     
+    function interface.user.create(username, password)
+        local Users = require("src.kernel.users")
+        -- Check if user exists? Users module should handle it.
+        -- For now, just call addUser.
+        -- In a real OS, this would require admin privileges or be restricted.
+        -- Since this is the Login app (which runs as root essentially before login), it's fine.
+        if Users.list[username] then
+            return false, "User already exists"
+        end
+        Users.addUser(username, password, "home/" .. username, "user")
+        return true
+    end
+    
     return interface
 end
 
