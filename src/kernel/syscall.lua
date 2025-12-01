@@ -125,6 +125,22 @@ function Syscall.createInterface(process)
         Audio.playSynth(type)
     end
     
+    -- User Management
+    interface.user = {}
+    function interface.user.login(username, password)
+        local Users = require("src.kernel.users")
+        return Users.authenticate(username, password)
+    end
+    
+    function interface.user.current()
+        local Users = require("src.kernel.users")
+        local u = Users.getCurrentUser()
+        if u then
+            return {name = u.name, home = u.home, role = u.role}
+        end
+        return nil
+    end
+    
     return interface
 end
 

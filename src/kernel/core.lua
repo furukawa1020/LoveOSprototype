@@ -8,6 +8,8 @@ local Process = require("src.kernel.process")
 function Kernel.init()
     VFS.init()
     WM.init()
+    local Users = require("src.kernel.users")
+    Users.init()
     
     -- System Apps are now spawned by main.lua or bootloader
 end
