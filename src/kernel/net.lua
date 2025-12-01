@@ -129,38 +129,82 @@ function Net.close(id)
 end
 
 Net.http = {}
+Net.http.requests = {}
+Net.http.thread = nil
+Net.http.channelIn = nil
+Net.http.channelOut = nil
 
-Net.http.sites = {
-    ["http://love.os/"] = [[
-        <h1>Welcome to LoveOS</h1>
-        <p>The operating system with soul.</p>
-        <hr>
-        <p>Links:</p>
-        <a href="http://love.os/about">About Us</a>
-        <a href="http://love.os/news">Latest News</a>
-    ]],
-    ["http://love.os/about"] = [[
-        <h1>About LoveOS</h1>
-        <p>Built with Love2D and Lua.</p>
-        <p>Designed for fun and creativity.</p>
-        <a href="http://love.os/">Back Home</a>
-    ]],
-    ["http://love.os/news"] = [[
-        <h1>Latest News</h1>
-        <p>2025-12-01: Browser Released!</p>
-        <p>2025-11-30: Paint App Added.</p>
-        <a href="http://love.os/">Back Home</a>
+function Net.init()
+    -- Start HTTP Thread
+    local threadCode = [[
+        local http = require("socket.http")
+        local love = require("love")
+        local channelIn = love.thread.getChannel("net_http_request")
+        local channelOut = love.thread.getChannel("net_http_response")
+        
+        while true do
+            local req = channelIn:pop()
+            if req then
+                local body, code, headers = http.request(req.url)
+                channelOut:push({id = req.id, body = body, code = code})
+            end
+            love.timer.sleep(0.01)
+        end
     ]]
-}
+    Net.http.thread = love.thread.newThread(threadCode)
+    Net.http.thread:start()
+    Net.http.channelIn = love.thread.getChannel("net_http_request")
+    Net.http.channelOut = love.thread.getChannel("net_http_response")
+end
 
-function Net.http.get(url)
-    -- Simulate network delay?
-    -- For now, instant.
-    local content = Net.http.sites[url]
-    if content then
-        return content, 200
+function Net.update(dt)
+    -- Check for responses
+    if Net.http.channelOut then
+        local res = Net.http.channelOut:pop()
+        while res do
+            Net.http.requests[res.id] = {body = res.body, code = res.code, done = true}
+            res = Net.http.channelOut:pop()
+        end
+    end
+end
+
+function Net.http.request(url)
+    local id = tostring(love.timer.getTime()) .. math.random()
+    Net.http.requests[id] = {done = false}
+    
+    if Net.http.channelIn then
+        Net.http.channelIn:push({id = id, url = url})
     else
-        return "<h1>404 Not Found</h1><p>The requested URL was not found.</p>", 404
+        -- Fallback if thread failed?
+        return nil, "Network thread not ready"
+    end
+    return id
+end
+
+function Net.http.check(id)
+    local req = Net.http.requests[id]
+    if not req then return nil, "Invalid Request" end
+    if req.done then
+        return req.body, req.code
+    end
+    return nil -- Pending
+end
+
+-- Keep simulation for localhost?
+-- Maybe handled by socket.http if we run a local server, but for "love.os" virtual domains:
+-- We can intercept in request()
+local realRequest = Net.http.request
+function Net.http.request(url)
+    if url:find("love.os") then
+        -- Virtual site
+        local id = "virtual_" .. tostring(love.timer.getTime())
+        local content = Net.http.sites[url] or "<h1>404</h1>"
+        local code = Net.http.sites[url] and 200 or 404
+        -- Immediate result
+        Net.http.requests[id] = {body = content, code = code, done = true}
+        return id
+    else
+        return realRequest(url)
     end
 end
 
