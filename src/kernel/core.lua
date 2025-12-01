@@ -5,6 +5,8 @@ local VFS = require("src.kernel.vfs")
 local Input = require("src.kernel.input")
 local Process = require("src.kernel.process")
 
+Kernel.panicData = nil
+
 function Kernel.init()
     VFS.init()
     WM.init()
@@ -12,15 +14,28 @@ function Kernel.init()
     Users.init()
     local Net = require("src.kernel.net")
     Net.init()
+    local Disk = require("src.kernel.disk")
+    Disk.init()
 end
 
 function Kernel.draw()
+    if Kernel.panicData then
+        -- BSOD
+        love.graphics.clear(0, 0, 0.8) -- Blue
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.print(":(", 50, 50, 0, 5, 5)
+        love.graphics.print("Your PC ran into a problem and needs to restart.", 50, 150, 0, 2, 2)
+        love.graphics.print("Error Code: KERNEL_PANIC", 50, 200)
+        love.graphics.print(tostring(Kernel.panicData), 50, 250)
+        return
+    end
     WM.draw()
 end
 
 function Kernel.textinput(t)
     Input.textinput(t)
 end
+
 function Kernel.keypressed(key)
     Input.keypressed(key)
 end
@@ -54,13 +69,6 @@ function Kernel.reload(moduleName)
     -- Update references if needed
     if moduleName == "src.kernel.wm" then
         WM = result
-        -- Re-init WM if needed? Or just swap functions?
-        -- For hot-swapping logic, we usually want to keep state.
-        -- But require returns a new table.
-        -- Ideally we copy functions from new table to old table to preserve state.
-        -- But for now, let's just swap the reference and hope state isn't lost (it will be lost if stored in locals).
-        -- To preserve state, modules should return a stateful object or we use a proxy.
-        -- Let's try a simple swap first.
     elseif moduleName == "src.kernel.vfs" then
         VFS = result
     end
@@ -75,29 +83,38 @@ function Kernel.reboot()
     print("System Reboot Initiated...")
     Kernel.isShuttingDown = true
     Kernel.shutdownTimer = 1.0 -- Wait 1 second for sound
-    
-    -- Play Shutdown/Reboot Sound
     local Audio = require("src.system.audio")
-    -- We need a specific sound. Let's use a sequence of synth tones.
-    -- "Pico-Pico" sound
     Audio.playSynth("key")
-    -- We can't easily sequence in Audio yet without a timer, so just play one or assume Audio handles it.
-    -- Let's just play a simple tone for now.
 end
 
 function Kernel.update(dt)
+    if Kernel.panicData then return end
+
     if Kernel.isShuttingDown then
         Kernel.shutdownTimer = Kernel.shutdownTimer - dt
         if Kernel.shutdownTimer <= 0 then
             love.event.quit("restart")
         end
-        return -- Stop updating other things?
+        return
     end
 
-    Scheduler.update(dt)
-    WM.update(dt)
-    local Net = require("src.kernel.net")
-    Net.update(dt)
+    -- Protected Update
+    local status, err = xpcall(function()
+        Scheduler.update(dt)
+        WM.update(dt)
+        local Net = require("src.kernel.net")
+        Net.update(dt)
+    end, debug.traceback)
+    
+    if not status then
+        Kernel.panic(err)
+    end
+end
+
+function Kernel.panic(err)
+    print("KERNEL PANIC: " .. tostring(err))
+    Kernel.panicData = err
+    -- Stop audio?
 end
 
 return Kernel
