@@ -170,24 +170,6 @@ function Syscall.createInterface(process)
         if Users.list[username] then
             return false, "User already exists"
         end
-        Users.addUser(username, password, "home/" .. username, "user")
-        return true
-    end
-    
-    -- Network
-    interface.net = {}
-    function interface.net.socket()
-        local Net = require("src.kernel.net")
-        return Net.socket()
-    end
-    
-    function interface.net.bind(id, port)
-        local Net = require("src.kernel.net")
-        return Net.bind(id, port)
-    end
-    
-    function interface.net.listen(id)
-        local Net = require("src.kernel.net")
         return Net.listen(id)
     end
     

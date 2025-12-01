@@ -37,6 +37,11 @@ Menu.items = {
         local Scheduler = require("src.kernel.scheduler")
         Scheduler.add(Process.new("Clock", "src/apps/clock.lua", true))
     end},
+    {name = "Paint", icon = "edit", action = function() 
+        local Process = require("src.kernel.process")
+        local Scheduler = require("src.kernel.scheduler")
+        Scheduler.add(Process.new("Paint", "src/apps/paint.lua", true))
+    end},
     {name = "Logout", icon = "logout", action = function() 
         love.event.quit("restart")
     end},

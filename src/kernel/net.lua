@@ -128,4 +128,40 @@ function Net.close(id)
     end
 end
 
+Net.http = {}
+
+Net.http.sites = {
+    ["http://love.os/"] = [[
+        <h1>Welcome to LoveOS</h1>
+        <p>The operating system with soul.</p>
+        <hr>
+        <p>Links:</p>
+        <a href="http://love.os/about">About Us</a>
+        <a href="http://love.os/news">Latest News</a>
+    ]],
+    ["http://love.os/about"] = [[
+        <h1>About LoveOS</h1>
+        <p>Built with Love2D and Lua.</p>
+        <p>Designed for fun and creativity.</p>
+        <a href="http://love.os/">Back Home</a>
+    ]],
+    ["http://love.os/news"] = [[
+        <h1>Latest News</h1>
+        <p>2025-12-01: Browser Released!</p>
+        <p>2025-11-30: Paint App Added.</p>
+        <a href="http://love.os/">Back Home</a>
+    ]]
+}
+
+function Net.http.get(url)
+    -- Simulate network delay?
+    -- For now, instant.
+    local content = Net.http.sites[url]
+    if content then
+        return content, 200
+    else
+        return "<h1>404 Not Found</h1><p>The requested URL was not found.</p>", 404
+    end
+end
+
 return Net
