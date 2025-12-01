@@ -13,6 +13,7 @@ function love.load()
     
     -- Spawn Login Process
     local Process = require("src.kernel.process")
+    Scheduler.add(Process.new("Chat Server", "src/system/chat_server.lua", true))
     Scheduler.add(Process.new("Login", "src/apps/login.lua", true))
 end
 
