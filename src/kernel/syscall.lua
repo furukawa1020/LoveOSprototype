@@ -196,6 +196,12 @@ function Syscall.createInterface(process)
         Net.close(id)
     end
     
+    -- Notifications
+    function interface.notify(title, message, icon)
+        local Notify = require("src.system.notify")
+        Notify.push(title, message, icon)
+    end
+    
     return interface
 end
 

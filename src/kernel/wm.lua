@@ -70,7 +70,11 @@ function WM.draw()
     love.graphics.setColor(1, 1, 1)
     if WM.wallpaper then love.graphics.draw(WM.wallpaper, 0, 0) end
     
-    -- 2. Draw Windows
+    -- 3. Desktop Icons
+    local Desktop = require("src.system.desktop")
+    Desktop.draw()
+
+    -- 4. Windows
     for _, win in ipairs(windows) do
         -- Window Shadow
         love.graphics.setColor(0, 0, 0, 0.3)
@@ -116,7 +120,7 @@ function WM.draw()
         love.graphics.rectangle("line", win.x, win.y - 30, win.w, win.h + 30, 8)
     end
     
-    -- 3. Taskbar (Dock)
+    -- 5. Taskbar (Dock)
     local screenH = love.graphics.getHeight()
     local screenW = love.graphics.getWidth()
     
@@ -141,29 +145,87 @@ function WM.draw()
     -- Clock
     love.graphics.setColor(1, 1, 1)
     love.graphics.print(os.date("%H:%M"), screenW - 50, screenH - 28)
+    
+    -- 6. Start Menu
+    local Menu = require("src.system.menu")
+    Menu.draw(10, screenH - 40)
+    
+    -- 7. Notifications
+    local Notify = require("src.system.notify")
+    Notify.draw()
 end
 
 function WM.mousepressed(x, y, button)
-    -- Check for clicks on windows (reverse order for top-most first)
+    -- Check Notifications? (Maybe close on click)
+    
+    -- Check Menu
+    local Menu = require("src.system.menu")
+    if Menu.mousepressed(x, y, button) then return end
+    
+    -- Check Taskbar
+    local screenH = love.graphics.getHeight()
+    if y > screenH - 40 then
+        -- Start Button
+        if x < 50 then
+            Menu.toggle()
+            return
+        end
+        -- Task buttons...
+        return
+    end
+    
+    -- Check Windows (Title bar for drag, Content for focus)
+    local hitWindow = false
     for i = #windows, 1, -1 do
         local win = windows[i]
-        -- Title bar click
-        if x >= win.x and x <= win.x + win.w and y >= win.y - 25 and y <= win.y then
-            WM.focus(win)
-            win.isDragging = true
-            win.dragOffsetX = x - win.x
-            win.dragOffsetY = y - win.y
-            return true
+        -- Check Title Bar
+        if x >= win.x and x <= win.x + win.w and y >= win.y - 30 and y <= win.y then
+            focusedWindow = win
+            draggingWindow = win
+            dragOffsetX = x - win.x
+            dragOffsetY = y - win.y
+            -- Bring to front
+            table.remove(windows, i)
+            table.insert(windows, win)
+            hitWindow = true
+            break
         end
-        -- Content click
+        -- Check Content
         if x >= win.x and x <= win.x + win.w and y >= win.y and y <= win.y + win.h then
-            WM.focus(win)
-            -- Pass event to process?
-            return true
+            focusedWindow = win
+            -- Bring to front
+            table.remove(windows, i)
+            table.insert(windows, win)
+            
+            -- Send event to process
+            if win.process and win.process.handler and win.process.handler.mousepressed then
+                -- Transform coordinates to window space
+                win.process.handler.mousepressed(x - win.x, y - win.y, button)
+            end
+            hitWindow = true
+            break
         end
     end
-    return false
+    
+    if not hitWindow then
+        -- Desktop Click
+        local Desktop = require("src.system.desktop")
+        Desktop.mousepressed(x, y, button)
+    end
 end
+
+function WM.update(dt)
+    -- Update Notifications
+    local Notify = require("src.system.notify")
+    Notify.update(dt)
+
+    if draggingWindow then
+        local mx, my = love.mouse.getPosition()
+        draggingWindow.x = mx - dragOffsetX
+        draggingWindow.y = my - dragOffsetY
+    end
+end
+
 
 function WM.mousereleased(x, y, button)
     if focusedWindow then
