@@ -203,7 +203,7 @@ function WM.mousepressed(x, y, button)
                 win.process.handler.mousepressed(x - win.x, y - win.y, button)
             end
             hitWindow = true
-            break
+            return true -- Consumed
         end
     end
     
@@ -212,6 +212,7 @@ function WM.mousepressed(x, y, button)
         local Desktop = require("src.system.desktop")
         Desktop.mousepressed(x, y, button)
     end
+    return false
 end
 
 local Registry = require("src.system.registry")
