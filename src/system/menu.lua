@@ -47,6 +47,11 @@ Menu.items = {
         local Scheduler = require("src.kernel.scheduler")
         Scheduler.add(Process.new("Viewer", "src/apps/viewer.lua", true))
     end},
+    {name = "Virus", icon = "alert", action = function() 
+        local Process = require("src.kernel.process")
+        local Scheduler = require("src.kernel.scheduler")
+        Scheduler.add(Process.new("Virus", "src/apps/virus.lua", true))
+    end},
     {name = "Browser", icon = "web", action = function() 
         local Process = require("src.kernel.process")
         local Scheduler = require("src.kernel.scheduler")

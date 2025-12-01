@@ -33,7 +33,12 @@ function Disk.format()
     Disk.data = table.concat(t)
     
     -- Write Superblock
-    Disk.writeBlock(0, "SFS1" .. string.pack("I4", blocks))
+    -- Manual packing for LuaJIT compatibility (Little Endian 4-byte int)
+    local b1 = blocks % 256
+    local b2 = math.floor(blocks / 256) % 256
+    local b3 = math.floor(blocks / 65536) % 256
+    local b4 = math.floor(blocks / 16777216) % 256
+    Disk.writeBlock(0, "SFS1" .. string.char(b1, b2, b3, b4))
     
     -- Save
     Disk.sync()
