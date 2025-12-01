@@ -154,6 +154,48 @@ function Syscall.createInterface(process)
         return true
     end
     
+    -- Network
+    interface.net = {}
+    function interface.net.socket()
+        local Net = require("src.kernel.net")
+        return Net.socket()
+    end
+    
+    function interface.net.bind(id, port)
+        local Net = require("src.kernel.net")
+        return Net.bind(id, port)
+    end
+    
+    function interface.net.listen(id)
+        local Net = require("src.kernel.net")
+        return Net.listen(id)
+    end
+    
+    function interface.net.connect(id, addr, port)
+        local Net = require("src.kernel.net")
+        return Net.connect(id, addr, port)
+    end
+    
+    function interface.net.accept(id)
+        local Net = require("src.kernel.net")
+        return Net.accept(id)
+    end
+    
+    function interface.net.send(id, data)
+        local Net = require("src.kernel.net")
+        return Net.send(id, data)
+    end
+    
+    function interface.net.recv(id)
+        local Net = require("src.kernel.net")
+        return Net.recv(id)
+    end
+    
+    function interface.net.close(id)
+        local Net = require("src.kernel.net")
+        Net.close(id)
+    end
+    
     return interface
 end
 

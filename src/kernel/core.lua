@@ -10,6 +10,8 @@ function Kernel.init()
     WM.init()
     local Users = require("src.kernel.users")
     Users.init()
+    local Net = require("src.kernel.net")
+    Net.init()
     
     -- System Apps are now spawned by main.lua or bootloader
 end
