@@ -12,7 +12,8 @@ function Notify.push(title, message, icon)
         y = -60 -- slide in animation start
     })
     -- Play sound
-    if sys.audio then sys.audio.play("notify") end
+    local Audio = require("src.system.audio")
+    Audio.playSynth("notify")
 end
 
 function Notify.update(dt)
@@ -37,20 +38,20 @@ function Notify.draw()
     
     for i, n in ipairs(Notify.list) do
         -- Background
-        sys.graphics.setColor(0.1, 0.1, 0.1, 0.9)
-        sys.graphics.rectangle("fill", x, n.y, w, 60, 5)
-        sys.graphics.setColor(1, 1, 1, 0.3)
-        sys.graphics.rectangle("line", x, n.y, w, 60, 5)
+        love.graphics.setColor(0.1, 0.1, 0.1, 0.9)
+        love.graphics.rectangle("fill", x, n.y, w, 60, 5)
+        love.graphics.setColor(1, 1, 1, 0.3)
+        love.graphics.rectangle("line", x, n.y, w, 60, 5)
         
         -- Icon
-        sys.graphics.setColor(0.3, 0.8, 0.3)
-        sys.graphics.circle("fill", x + 30, n.y + 30, 15)
+        love.graphics.setColor(0.3, 0.8, 0.3)
+        love.graphics.circle("fill", x + 30, n.y + 30, 15)
         
         -- Text
-        sys.graphics.setColor(1, 1, 1)
-        sys.graphics.print(n.title, x + 60, n.y + 10)
-        sys.graphics.setColor(0.8, 0.8, 0.8)
-        sys.graphics.print(n.message, x + 60, n.y + 30)
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.print(n.title, x + 60, n.y + 10)
+        love.graphics.setColor(0.8, 0.8, 0.8)
+        love.graphics.print(n.message, x + 60, n.y + 30)
     end
 end
 

@@ -13,18 +13,18 @@ function Desktop.draw()
     for i, icon in ipairs(Desktop.icons) do
         -- Selection
         if Desktop.selected == i then
-            sys.graphics.setColor(1, 1, 1, 0.2)
-            sys.graphics.rectangle("fill", icon.x - 5, icon.y - 5, 70, 80, 5)
+            love.graphics.setColor(1, 1, 1, 0.2)
+            love.graphics.rectangle("fill", icon.x - 5, icon.y - 5, 70, 80, 5)
         end
         
         -- Icon
-        sys.graphics.setColor(1, 1, 1)
+        love.graphics.setColor(1, 1, 1)
         -- Placeholder icon rect
-        sys.graphics.rectangle("line", icon.x + 10, icon.y, 40, 40, 5)
-        sys.graphics.print(icon.icon, icon.x + 15, icon.y + 15) -- Text as icon for now
+        love.graphics.rectangle("line", icon.x + 10, icon.y, 40, 40, 5)
+        love.graphics.print(icon.icon, icon.x + 15, icon.y + 15) -- Text as icon for now
         
         -- Label
-        sys.graphics.printf(icon.name, icon.x - 10, icon.y + 50, 80, "center")
+        love.graphics.printf(icon.name, icon.x - 10, icon.y + 50, 80, "center")
     end
 end
 
@@ -48,14 +48,14 @@ function Desktop.mousepressed(x, y, button)
 end
 
 function Desktop.open(icon)
+    local Process = require("src.kernel.process")
+    local Scheduler = require("src.kernel.scheduler")
+    
     if icon.type == "dir" then
-        -- We need to pass arguments to Filer?
-        -- Currently Filer defaults to home.
-        -- Let's spawn Filer and maybe IPC it to change dir?
-        -- Or just spawn Filer.
-        sys.spawn("Filer", "src/apps/filer.lua")
+        -- Spawn Filer
+        Scheduler.add(Process.new("Filer", "src/apps/filer.lua", true))
     elseif icon.type == "file" then
-        sys.spawn("Löve Edit", "src/apps/editor.lua")
+        Scheduler.add(Process.new("Löve Edit", "src/apps/editor.lua", true))
     end
 end
 
