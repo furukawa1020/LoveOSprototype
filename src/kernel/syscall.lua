@@ -21,11 +21,9 @@ function Syscall.createInterface(process)
         process.status = "dead"
     end
     
-    function interface.spawn(name, func)
-        -- Security check? For now allow spawning
-        -- But wait, func is a function. In a real OS we spawn from file.
-        -- For now, we support spawning functions (threads)
-        local proc = Process.new(name, func)
+    function interface.spawn(name, pathOrFunc)
+        local isPath = type(pathOrFunc) == "string"
+        local proc = Process.new(name, pathOrFunc, isPath)
         Scheduler.add(proc)
     end
     

@@ -53,14 +53,7 @@ function WM.focus(win)
     end
 end
 
-function WM.update(dt)
-    -- Handle dragging
-    if focusedWindow and focusedWindow.isDragging then
-        local mx, my = love.mouse.getPosition()
-        focusedWindow.x = mx - focusedWindow.dragOffsetX
-        focusedWindow.y = my - focusedWindow.dragOffsetY
-    end
-end
+
 
 function WM.draw()
     -- Reset canvas to screen
@@ -217,6 +210,9 @@ end
 
 local Registry = require("src.system.registry")
 
+local draggingWindow = nil
+local dragOffsetX, dragOffsetY = 0, 0
+
 function WM.update(dt)
     -- Update Notifications
     local Notify = require("src.system.notify")
@@ -243,8 +239,8 @@ function WM.update(dt)
     end
 end
 
-
 function WM.mousereleased(x, y, button)
+    draggingWindow = nil
     if focusedWindow then
         focusedWindow.isDragging = false
     end
