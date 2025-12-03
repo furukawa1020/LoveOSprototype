@@ -31,28 +31,28 @@ function Scheduler.update(dt)
         if proc.status == "running" then
             Scheduler.currentProcess = proc
             
-            -- Preemption Hook
+            -- Preemption Hook (Disabled for stability with C-calls)
             -- Check time every 1000 instructions
-            local startTime = love.timer.getTime()
+            -- local startTime = love.timer.getTime()
             
-            local function hook()
-                if love.timer.getTime() - startTime > timeSlice then
-                    -- Force yield
-                    coroutine.yield()
-                end
-            end
+            -- local function hook()
+            --     if love.timer.getTime() - startTime > timeSlice then
+            --         -- Force yield
+            --         coroutine.yield()
+            --     end
+            -- end
             
             -- Set hook on the process coroutine
-            if proc.co and coroutine.status(proc.co) ~= "dead" then
-                debug.sethook(proc.co, hook, "", 1000)
-            end
+            -- if proc.co and coroutine.status(proc.co) ~= "dead" then
+            --     debug.sethook(proc.co, hook, "", 1000)
+            -- end
             
             proc:resume(dt)
             
             -- Clear hook
-            if proc.co and coroutine.status(proc.co) ~= "dead" then
-                debug.sethook(proc.co)
-            end
+            -- if proc.co and coroutine.status(proc.co) ~= "dead" then
+            --     debug.sethook(proc.co)
+            -- end
             
             Scheduler.currentProcess = nil
         end
