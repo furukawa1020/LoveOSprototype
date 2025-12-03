@@ -160,8 +160,8 @@ function Login.submit()
         local success = sys.user.login(Login.username, Login.password)
         if success then
             Login.status = "Welcome!"
-            sys.spawn("Terminal", "src/system/terminal.lua")
             sys.spawn("Filer", "src/apps/filer.lua")
+            sys.spawn("Terminal", "src/apps/terminal_app.lua")
             sys.exit()
         else
             Login.status = "Invalid credentials"

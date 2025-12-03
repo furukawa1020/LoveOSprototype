@@ -131,7 +131,7 @@ function Editor.keypressed(key)
         if Editor.cursorX > 1 then Editor.cursorX = Editor.cursorX - 1 end
     elseif key == "right" then
         if Editor.cursorX <= utf8.len(Editor.lines[Editor.cursorY]) then Editor.cursorX = Editor.cursorX + 1 end
-    elseif key == "s" and (love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl")) then
+    elseif key == "s" and (sys.isDown("lctrl") or sys.isDown("rctrl")) then
         -- Note: love.keyboard is NOT available in sandbox!
         -- We need to handle modifiers in keypressed event or via sys interface.
         -- For now, let's assume modifiers are passed or we can't check them easily without sys.isDown
@@ -151,6 +151,7 @@ function Editor.run()
     
     while true do
         local dt = coroutine.yield()
+        dt = dt or 0
         
         Editor.update(dt)
         

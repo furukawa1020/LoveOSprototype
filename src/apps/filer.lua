@@ -84,8 +84,11 @@ function Filer.mousepressed(x, y, button)
                     Filer.selectedIndex = 1
                 else
                     -- Open file
-                    -- TODO: Launch Editor
-                    sys.print("Opening file: " .. item.name)
+                    if item.name:match("%.lua$") then
+                        sys.spawn(item.name, Filer.currentPath .. "/" .. item.name)
+                    else
+                        sys.spawn("Editor", "src/apps/editor.lua") -- TODO: Pass file path
+                    end
                 end
             else
                 Filer.selectedIndex = i
@@ -100,12 +103,13 @@ function Filer.mousepressed(x, y, button)
 end
 
 function Filer.run()
-    local win = sys.createWindow("Filer", 50, 50, 500, 350)
+    local win = sys.createWindow("Filer", 400, 100, 500, 350)
     
     Filer.init()
     
     while true do
         local dt = coroutine.yield()
+        dt = dt or 0
         
         Filer.update(dt)
         

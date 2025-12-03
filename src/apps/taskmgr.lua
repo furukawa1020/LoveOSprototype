@@ -25,6 +25,7 @@ function TaskMgr.run()
     -- Main Loop
     while true do
         local dt = coroutine.yield()
+        dt = dt or 0
         
         -- Update Stats
         TaskMgr.timer = TaskMgr.timer + dt

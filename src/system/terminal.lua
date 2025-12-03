@@ -1,4 +1,5 @@
 local Terminal = {}
+local utf8 = require("utf8")
 -- utf8 is injected by sandbox
 
 Terminal.lines = {}
@@ -25,43 +26,44 @@ Terminal.colors = {
 
 -- Boot Sequence Data
 local bootSequence = {
-    {text = "LÖVE BIOS v11.5 (c) 2006-2025", delay = 0.5},
-    {text = "CPU: LUA JIT 2.1.0 detected", delay = 0.2},
+    {text = "LÖVE BIOS v11.5 (c) 2006-2025", delay = 0.1},
+    {text = "CPU: LUA JIT 2.1.0 detected", delay = 0.1},
     {text = "Memory Test: ", delay = 0, type = "memory"},
-    {text = "OK", delay = 0.5},
-    {text = "Detecting Primary Master... LÖVE.EXE", delay = 0.3},
-    {text = "Detecting Primary Slave...  None", delay = 0.1},
-    {text = "", delay = 0.5},
-    {text = "Booting from Hard Disk...", delay = 1.0},
-    {text = "Loading Kernel...", delay = 0.2},
-    {text = "Mounting root filesystem... [OK]", delay = 0.1},
-    {text = "Starting init process...    [OK]", delay = 0.1},
-    {text = "Initializing graphics...    [OK]", delay = 0.1},
-    {text = "Initializing sound...       [OK]", delay = 0.1},
-    {text = "", delay = 0.5},
+    {text = "OK", delay = 0.1},
+    {text = "Detecting Primary Master... LÖVE.EXE", delay = 0.1},
+    {text = "Detecting Primary Slave...  None", delay = 0},
+    {text = "", delay = 0.1},
+    {text = "Booting from Hard Disk...", delay = 0.2},
+    {text = "Loading Kernel...", delay = 0.1},
+    {text = "Mounting root filesystem... [OK]", delay = 0},
+    {text = "Starting init process...    [OK]", delay = 0},
+    {text = "Initializing graphics...    [OK]", delay = 0},
+    {text = "Initializing sound...       [OK]", delay = 0},
+    {text = "", delay = 0.1},
     {text = "Welcome to LöveOS.", delay = 0.1},
     {text = "Type 'help' for commands.", delay = 0.1},
     {text = "", delay = 0}
 }
 
-function Terminal.run()
-    local win = sys.createWindow("Terminal", 50, 50, 640, 480)
+function Terminal.run(system)
+    local win = system.createWindow("Terminal", 50, 50, 640, 480)
     
-    Terminal.init()
+    Terminal.init(system)
     
     while true do
         local dt = coroutine.yield()
         
         Terminal.update(dt)
         
-        sys.setCanvas(win.canvas)
-        sys.graphics.clear(0, 0, 0, 1) -- Black background
+        system.setCanvas(win.canvas)
+        system.graphics.clear(0, 0, 0, 1) -- Black background
         Terminal.draw()
-        sys.setCanvas()
+        system.setCanvas()
     end
 end
 
-function Terminal.init()
+function Terminal.init(system)
+    Terminal.sys = system
     Terminal.lines = {}
     Terminal.currentLine = ""
     Terminal.state = "boot"
@@ -139,8 +141,8 @@ function Terminal.updateBoot(dt)
         Terminal.bootTimer = 0.01 -- Fast typing
         
         -- Play typing sound
-        if sys.audio then
-            sys.audio.play("key")
+        if Terminal.sys and Terminal.sys.audio then
+            Terminal.sys.audio.play("key")
         end
     else
         -- Line finished
@@ -174,6 +176,8 @@ function Terminal.execute(cmd)
         Terminal.print("  reboot                 Reboot system")
     elseif command == "clear" then
         Terminal.lines = {}
+    elseif command == "exit" then
+        Terminal.sys.exit()
     elseif command == "ls" then
         Terminal.print("readme.txt  kernel.sys  love.tar.gz")
     elseif command == "reboot" then
@@ -228,15 +232,10 @@ function Terminal.execute(cmd)
         end
     elseif command == "top" then
         -- Launch Task Manager as a process
-        sys.spawn("Task Manager", "src/apps/taskmgr.lua")
+        Terminal.sys.spawn("Task Manager", "src/apps/taskmgr.lua")
     elseif command == "lpm" then
         -- Launch Package Manager
-        -- We pass arguments? sys.spawn doesn't support args yet in our simple implementation.
-        -- But we can pass them via a global or IPC?
-        -- For now, let's just spawn it and let it run interactive or default.
-        -- Or we can modify sys.spawn to take args.
-        -- Let's assume lpm is interactive for now or just lists.
-        sys.spawn("Package Manager", "src/apps/lpm.lua")
+        Terminal.sys.spawn("Package Manager", "src/apps/lpm.lua")
     elseif command == "reload" or command == "inject" then
         if parts[2] then
             local Kernel = require("src.kernel.core")
@@ -290,57 +289,58 @@ end
 
 
 function Terminal.draw()
-    local font = sys.graphics.getFont()
+    if not Terminal.sys then return end
+    local font = Terminal.sys.graphics.getFont()
     local lineHeight = font:getHeight()
     
     -- Draw Lines
     for i, line in ipairs(Terminal.lines) do
-        sys.graphics.setColor(line.color)
-        sys.graphics.print(line.text, 10, 10 + (i - 1) * lineHeight)
+        Terminal.sys.graphics.setColor(line.color)
+        Terminal.sys.graphics.print(line.text, 10, 10 + (i - 1) * lineHeight)
     end
     
     -- Draw Booting Line (if active)
     if Terminal.state == "boot" and Terminal.currentBootLine ~= "" then
         local y = 10 + #Terminal.lines * lineHeight
-        sys.graphics.setColor(Terminal.colors.default)
-        sys.graphics.print(Terminal.currentBootLine, 10, y)
+        Terminal.sys.graphics.setColor(Terminal.colors.default)
+        Terminal.sys.graphics.print(Terminal.currentBootLine, 10, y)
     end
     
     -- Draw Prompt
     if Terminal.state ~= "boot" and Terminal.state ~= "installing" and Terminal.state ~= "compiling_world" then
         local y = 10 + #Terminal.lines * lineHeight
-        sys.graphics.setColor(Terminal.colors.default)
-        sys.graphics.print(Terminal.prompt .. Terminal.currentLine, 10, y)
+        Terminal.sys.graphics.setColor(Terminal.colors.default)
+        Terminal.sys.graphics.print(Terminal.prompt .. Terminal.currentLine, 10, y)
         
         -- Draw Cursor
         if math.floor(Terminal.cursorBlink * 2) % 2 == 0 then
             local width = font:getWidth(Terminal.prompt .. Terminal.currentLine)
-            sys.graphics.rectangle("fill", 10 + width, y, 10, lineHeight)
+            Terminal.sys.graphics.rectangle("fill", 10 + width, y, 10, lineHeight)
         end
     elseif Terminal.state == "installing" then
         local y = 10 + #Terminal.lines * lineHeight
         local progress = math.floor(Terminal.installProgress * 20)
         local bar = "[" .. string.rep("#", progress) .. string.rep(" ", 20 - progress) .. "]"
-        sys.graphics.setColor(Terminal.colors.highlight)
-        sys.graphics.print("Unpacking: " .. bar .. " " .. math.floor(Terminal.installProgress * 100) .. "%", 10, y)
+        Terminal.sys.graphics.setColor(Terminal.colors.highlight)
+        Terminal.sys.graphics.print("Unpacking: " .. bar .. " " .. math.floor(Terminal.installProgress * 100) .. "%", 10, y)
     elseif Terminal.state == "compiling_world" then
         local y = 10 + #Terminal.lines * lineHeight
         local progress = math.floor(Terminal.compileProgress * 20)
         local bar = "[" .. string.rep("#", progress) .. string.rep(" ", 20 - progress) .. "]"
-        sys.graphics.setColor(Terminal.colors.highlight)
-        sys.graphics.print("Compiling: " .. bar .. " " .. math.floor(Terminal.compileProgress * 100) .. "%", 10, y)
+        Terminal.sys.graphics.setColor(Terminal.colors.highlight)
+        Terminal.sys.graphics.print("Compiling: " .. bar .. " " .. math.floor(Terminal.compileProgress * 100) .. "%", 10, y)
     end
     
     -- Debug Overlay
-    sys.graphics.setColor(1, 0, 0)
-    sys.graphics.print("State: " .. Terminal.state, 500, 10)
+    Terminal.sys.graphics.setColor(1, 0, 0)
+    Terminal.sys.graphics.print("State: " .. Terminal.state, 500, 10)
     if Terminal.state == "boot" then
-        sys.graphics.print("Queue: " .. #Terminal.bootQueue, 500, 25)
-        sys.graphics.print("Timer: " .. string.format("%.2f", Terminal.bootTimer), 500, 40)
+        Terminal.sys.graphics.print("Queue: " .. #Terminal.bootQueue, 500, 25)
+        Terminal.sys.graphics.print("Timer: " .. string.format("%.2f", Terminal.bootTimer), 500, 40)
         if #Terminal.bootQueue > 0 then
-            sys.graphics.print("Task: " .. (Terminal.bootQueue[1].text or "???"), 500, 55)
+            Terminal.sys.graphics.print("Task: " .. (Terminal.bootQueue[1].text or "???"), 500, 55)
         end
-        sys.graphics.print("Press ESC to Skip", 500, 70)
+        Terminal.sys.graphics.print("Press ESC to Skip", 500, 70)
     end
 end
 

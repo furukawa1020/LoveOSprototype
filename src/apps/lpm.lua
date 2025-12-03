@@ -43,6 +43,7 @@ function LPM.run()
     
     while true do
         local dt = coroutine.yield()
+        dt = dt or 0
         
         sys.setCanvas(win.canvas)
         sys.graphics.clear(0.9, 0.9, 0.95, 1)

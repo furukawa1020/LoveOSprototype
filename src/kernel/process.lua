@@ -17,6 +17,7 @@ function Process.new(name, pathOrFunc, isPath)
         os = {date = os.date, time = os.time, clock = os.clock},
         coroutine = coroutine,
         utf8 = require("utf8"), -- Inject utf8 lib
+        require = require, package = package, -- Allow modules
     }
     self.env = env
     

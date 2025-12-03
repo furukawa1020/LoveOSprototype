@@ -1,36 +1,39 @@
 local TerminalApp = {}
-local WM = require("src.kernel.wm")
-local Scheduler = require("src.kernel.scheduler")
 
 -- Reuse existing Terminal logic but redirect drawing to canvas
 local Terminal = require("src.system.terminal")
 
 function TerminalApp.run()
     -- Create Window
-    local process = Scheduler.getCurrentProcess()
-    local win = WM.createWindow(process, "Terminal", 50, 50, 640, 480)
+    -- Use sys.createWindow which is injected into the environment
+    local win = sys.createWindow("Terminal", 50, 50, 640, 480)
     
-    -- Initialize Terminal Logic
-    Terminal.init()
+    -- Initialize Terminal Logic with system interface
+    Terminal.init(sys)
     
     while true do
         local dt = coroutine.yield()
+        dt = dt or 0
         
         -- Update Terminal Logic
         Terminal.update(dt)
         
         -- Draw to Window Canvas
-        love.graphics.setCanvas(win.canvas)
-        love.graphics.clear(0, 0, 0, 1) -- Black background
-        
-        -- We need to modify Terminal.draw to NOT use fixed coordinates or use a transform
-        -- Or we just draw it and let the canvas handle it
-        -- Terminal.draw uses 10, 10 offset. That's fine for window content.
+        sys.setCanvas(win.canvas)
+        sys.graphics.clear(0, 0, 0, 1) -- Black background
         
         Terminal.draw()
         
-        love.graphics.setCanvas()
+        sys.setCanvas()
     end
+end
+
+function TerminalApp.keypressed(key)
+    Terminal.keypressed(key)
+end
+
+function TerminalApp.textinput(t)
+    Terminal.textinput(t)
 end
 
 return TerminalApp

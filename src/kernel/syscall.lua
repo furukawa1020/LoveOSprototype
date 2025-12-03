@@ -74,6 +74,7 @@ function Syscall.createInterface(process)
     
     -- Input
     -- Input is event based, handled by handlers.
+    interface.isDown = love.keyboard.isDown
     
     -- IPC
     function interface.send(channel, message)

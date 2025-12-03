@@ -98,6 +98,12 @@ function WM.draw()
         end
         love.graphics.rectangle("fill", win.x, win.y - 30, win.w, 30, 8, 8)
         
+        -- Close Button
+        love.graphics.setColor(1, 0.4, 0.4)
+        love.graphics.circle("fill", win.x + win.w - 15, win.y - 15, 8)
+        love.graphics.setColor(0.5, 0, 0)
+        love.graphics.print("x", win.x + win.w - 19, win.y - 23)
+        
         -- Title Text
         love.graphics.setColor(1, 1, 1)
         love.graphics.print(win.title, win.x + 10, win.y - 22)
@@ -173,6 +179,12 @@ function WM.mousepressed(x, y, button)
         local win = windows[i]
         -- Check Title Bar
         if x >= win.x and x <= win.x + win.w and y >= win.y - 30 and y <= win.y then
+            -- Check Close Button
+            if x >= win.x + win.w - 25 and x <= win.x + win.w - 5 then
+                if win.process then win.process:kill() end
+                return true
+            end
+
             focusedWindow = win
             draggingWindow = win
             dragOffsetX = x - win.x
@@ -236,6 +248,18 @@ function WM.update(dt)
             love.graphics.circle("fill", math.random(0, 1280), math.random(0, 720), math.random(50, 200))
         end
         love.graphics.setCanvas()
+    end
+
+    -- Cleanup dead windows
+    for i = #windows, 1, -1 do
+        local win = windows[i]
+        if win.process and win.process.status == "dead" then
+            table.remove(windows, i)
+            if focusedWindow == win then
+                focusedWindow = windows[#windows] -- Focus top window
+                if draggingWindow == win then draggingWindow = nil end
+            end
+        end
     end
 end
 

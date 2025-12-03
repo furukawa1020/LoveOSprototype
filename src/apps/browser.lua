@@ -46,6 +46,7 @@ function Browser.run()
     
     while true do
         local dt = coroutine.yield()
+        dt = dt or 0
         Browser.update(dt)
         
         sys.setCanvas(win.canvas)
